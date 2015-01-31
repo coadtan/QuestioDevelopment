@@ -3,6 +3,7 @@ package com.questio.projects.questiodevelopment;
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -60,10 +61,30 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             // Create a tab with text corresponding to the page title defined by the adapter.
             // Also specify this Activity object, which implements the TabListener interface, as the
             // listener for when this tab is selected.
-            actionBar.addTab(
-                    actionBar.newTab()
-                            .setText(mAppSectionsPagerAdapter.getPageTitle(i))
-                            .setTabListener(this));
+            if(i == 0) {
+                String uri = "@drawable/ic_launcher";
+                int imageResource = getResources().getIdentifier(uri, null, getPackageName());
+                Drawable res = getResources().getDrawable(imageResource);
+                actionBar.addTab(
+                        actionBar.newTab()
+                                .setIcon(res)
+                                .setTabListener(this));
+            }else if(i == 1) {
+
+                actionBar.addTab(actionBar.newTab().setIcon(android.R.drawable.ic_menu_call).setTabListener(this));
+            }else if(i == 2) {
+
+
+                actionBar.addTab(actionBar.newTab().setIcon(android.R.drawable.ic_menu_agenda).setTabListener(this));
+            }else if(i == 3) {
+
+
+                actionBar.addTab(actionBar.newTab().setIcon(android.R.drawable.ic_menu_zoom).setTabListener(this));
+            }else {
+
+                actionBar.addTab(actionBar.newTab().setIcon(android.R.drawable.ic_menu_add).setTabListener(this));
+            }
+
         }
     }
 
@@ -93,33 +114,24 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             super(fm);
         }
 
+
+
         @Override
         public Fragment getItem(int i) {
-            switch (i) {
-                case 0:
-                    // The first section of the app is the most interesting -- it offers
-                    // a launchpad into the other demonstrations in this example application.
-                    return new LaunchpadSectionFragment();
-
-                default:
-                    // The other sections of the app are dummy placeholders.
                     Fragment fragment = new DummySectionFragment();
                     Bundle args = new Bundle();
                     args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, i + 1);
                     fragment.setArguments(args);
                     return fragment;
-            }
+
         }
 
         @Override
         public int getCount() {
-            return 3;
+            return 5;
         }
 
-        @Override
-        public CharSequence getPageTitle(int position) {
-            return "Section " + (position + 1);
-        }
+
     }
 
     /**
