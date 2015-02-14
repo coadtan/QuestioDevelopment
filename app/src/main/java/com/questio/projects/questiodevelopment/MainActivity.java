@@ -20,7 +20,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
 
     AppSectionsPagerAdapter mAppSectionsPagerAdapter;
-
+    int testSlack = 0;
     ViewPager mViewPager;
 
     public void onCreate(Bundle savedInstanceState) {
