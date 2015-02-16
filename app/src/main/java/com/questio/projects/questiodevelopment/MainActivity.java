@@ -14,7 +14,7 @@ import android.view.MenuInflater;
 public class MainActivity extends FragmentActivity implements ActionBar.TabListener {
 
     AppSectionsPagerAdapter mAppSectionsPagerAdapter;
-
+    int testSlack = 0;
     ViewPager mViewPager;
 
     public void onCreate(Bundle savedInstanceState) {
