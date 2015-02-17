@@ -21,7 +21,7 @@
         android:theme="@android:style/Theme.Holo.Light.DarkActionBar">
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyCc_t-0HcRogZabG7uM8PM-A2OU_Gvvy9Q" />
+            android:value="AIzaSyAZlEfE3NqK1nfpYHQ8jvzAqxJYy1yqjjI" />
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
