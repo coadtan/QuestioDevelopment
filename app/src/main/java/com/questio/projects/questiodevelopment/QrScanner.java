@@ -20,6 +20,11 @@ public class QrScanner extends Activity {
     private static final int ZBAR_SCANNER_REQUEST = 0;
     private static final int ZBAR_QR_SCANNER_REQUEST = 1;
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.fragment_qr_scan);
+    }
 
 
     public void launchQRScanner(View v) {

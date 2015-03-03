@@ -27,6 +27,7 @@ public class ZBarScannerActivity extends Activity implements Camera.PreviewCallb
 
     static {
         System.loadLibrary("iconv");
+
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.questio.projects.questiodevelopment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -123,6 +124,9 @@ public class SectionQuestmap extends Fragment implements LocationListener {
     public void onProviderDisabled(String provider) {
 
     }
+
+
+
 }
 
 
