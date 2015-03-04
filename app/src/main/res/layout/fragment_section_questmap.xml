@@ -47,4 +47,10 @@
             android:layout_height="wrap_content"
             android:textSize="12sp" />
     </LinearLayout>
+    <Button
+        android:id="@+id/scan_btn"
+        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:onClick="launchQRScanner"
+        android:text="Scan" />
 </LinearLayout>
