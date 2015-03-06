@@ -11,9 +11,11 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -24,6 +26,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.gson.Gson;
@@ -46,7 +49,7 @@ import java.util.HashMap;
 ///**
 // * Created by CHAKRIT on 16/2/2558.
 // */
-public class SectionQuestmap extends Fragment implements LocationListener {
+public class SectionQuestmap extends Fragment implements LocationListener, GoogleMap.OnCameraChangeListener {
     DBController controller;
     ProgressDialog prgDialog;
     HashMap<String, String> queryValues;
@@ -55,9 +58,6 @@ public class SectionQuestmap extends Fragment implements LocationListener {
     private GoogleMap googleMap;
     TextView tv_place_detail;
     TextView tv_place_latlng;
-    Button btn_kmutt_location;
-    Button btn_sciplanet_location;
-    Button btn_nsm_location;
     View v;
     double currentLat;
     double currentLng;
@@ -65,55 +65,46 @@ public class SectionQuestmap extends Fragment implements LocationListener {
     double kmuttLng = 100.494195;
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        controller = new DBController(getActivity());
+        setHasOptionsMenu(true);
+
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // inflat and return the layout
         this.v = inflater.inflate(R.layout.fragment_section_questmap, container,
                 false);
-        initializeView();
 
-        //  begin data
-        controller = new DBController(getActivity());
-        ArrayList<HashMap<String, String>> placeList = controller.getAllPlaces();
-        if (placeList.size() != 0) {
-            // Set the User Array list in ListView
-            ListAdapter adapter = new SimpleAdapter(getActivity(), placeList, R.layout.view_place_entry, new String[]{
-                    "placeid", "placename", "latitude", "longitude"}, new int[]
-                    {R.id.placeId, R.id.placeName, R.id.placeLat, R.id.placeLng});
-            ListView myList = (ListView) v.findViewById(android.R.id.list);
-            myList.setAdapter(adapter);
-        }
+
         prgDialog = new ProgressDialog(getActivity());
         prgDialog.setMessage("Transferring Data from Remote MySQL DB and Syncing SQLite. Please wait...");
         prgDialog.setCancelable(false);
-
+        //  begin data
+        ArrayList<HashMap<String, String>> placeList = controller.getAllPlaces();
+        if (placeList.size() != 0) {
+            // Set the User Array list in ListView
+            ListAdapter adapter = new SimpleAdapter(getActivity(),
+                    placeList,
+                    R.layout.view_place_entry,
+                    new String[]{
+                            "placeid",
+                            "placename",
+                            "latitude",
+                            "longitude"
+                    },
+                    new int[]{
+                            R.id.placeId,
+                            R.id.placeName,
+                            R.id.placeLat,
+                            R.id.placeLng}
+            );
+            ListView myList = (ListView) v.findViewById(android.R.id.list);
+            myList.setAdapter(adapter);
+        }
         // end data
-        btn_kmutt_location.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                currentLat = 13.652948;
-                currentLng = 100.494281;
-                // calculate distance between 2 points
-                float[] results = new float[1];
-                Location.distanceBetween(currentLat, currentLng,
-                        kmuttLat, kmuttLng, results);
-                Toast.makeText(getActivity(), "" + results[0], Toast.LENGTH_LONG).show();
-            }
-        });
-        btn_sciplanet_location.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                currentLat = 0;
-                currentLng = 0;
-            }
-        });
-        btn_nsm_location.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                syncSQLiteMySQLDB();
-
-            }
-        });
 
         mMapView = (MapView) v.findViewById(R.id.map);
         mMapView.onCreate(savedInstanceState);
@@ -128,6 +119,7 @@ public class SectionQuestmap extends Fragment implements LocationListener {
         }
         googleMap = mMapView.getMap();
         googleMap.setMyLocationEnabled(true);
+        googleMap.setOnCameraChangeListener(this);
         LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         String provider = locationManager.getBestProvider(new Criteria(), true);
         Log.d("QuestMap:provider", provider);
@@ -146,11 +138,39 @@ public class SectionQuestmap extends Fragment implements LocationListener {
         return v;
     }
 
-    public void initializeView() {
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+    }
 
-        btn_kmutt_location = (Button) v.findViewById(R.id.btn_kmutt_location);
-        btn_sciplanet_location = (Button) v.findViewById(R.id.btn_sciplanet_location);
-        btn_nsm_location = (Button) v.findViewById(R.id.btn_nsm_location);
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_kmutt_location:
+                currentLat = 13.652948;
+                currentLng = 100.494281;
+                // calculate distance between 2 points
+                float[] results = new float[1];
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(kmuttLat, kmuttLng), 16.0f));
+
+                Location.distanceBetween(currentLat, currentLng,
+                        kmuttLat, kmuttLng, results);
+                Toast.makeText(getActivity(), "" + results[0], Toast.LENGTH_LONG).show();
+                return true;
+            case R.id.action_sciplanet_location:
+                currentLat = 0;
+                currentLng = 0;
+                return true;
+            case R.id.action_nsm_location:
+                currentLat = 0;
+                currentLng = 0;
+                return true;
+            case R.id.action_sync_data:
+                syncSQLiteMySQLDB();
+            default:
+                break;
+        }
+        return false;
     }
 
     @Override
@@ -175,6 +195,15 @@ public class SectionQuestmap extends Fragment implements LocationListener {
     public void onLowMemory() {
         super.onLowMemory();
         mMapView.onLowMemory();
+    }
+
+    @Override
+    public void onCameraChange(CameraPosition cameraPosition) {
+        //Log.d("onCameraChange","camara changed!");
+        float fixZoom = 16.0f;
+        if (cameraPosition.zoom != fixZoom) {
+            googleMap.animateCamera(CameraUpdateFactory.zoomTo(fixZoom));
+        }
     }
 
     @Override
@@ -212,69 +241,32 @@ public class SectionQuestmap extends Fragment implements LocationListener {
 
     // Method to Sync MySQL to SQLite DB
     public void syncSQLiteMySQLDB() {
-        // Create AsycHttpClient object
         AsyncHttpClient client = new AsyncHttpClient();
-        // Http Request Params Object
         RequestParams params = new RequestParams();
-        // Show ProgressBar
-        // prgDialog.show();
-        // Make Http call to getusers.php
-        //client.post("http://192.168.2.4:9000/mysqlsqlitesync/getusers.php", params, new AsyncHttpResponseHandler() {
-//        client.post("http://128.199.190.130/select_all_place.php", params, new AsyncHttpResponseHandler() {
-//
-//
-//            @Override
-//            public void onSuccess(int i, Header[] headers, byte[] bytes) {
-//                // Hide ProgressBar
-//                prgDialog.hide();
-//                // Update SQLite DB with response sent by getusers.php
-//                Log.d("syncSQLiteMySQLDB", Arrays.toString(bytes));
-//                updateSQLite(bytes.toString());
-//            }
-//
-//            // When error occured
-//            @Override
-//            public void onFailure(int i, Header[] headers, byte[] bytes, Throwable throwable) {
-//                // Hide ProgressBar
-//                prgDialog.hide();
-//                Log.d("syncSQLiteMySQLDB", "status code: " + i);
-//                if (i == 404) {
-//                    Toast.makeText(getActivity(), "Requested resource not found", Toast.LENGTH_LONG).show();
-//                } else if (i == 500) {
-//                    Toast.makeText(getActivity(), "Something went wrong at server end", Toast.LENGTH_LONG).show();
-//                } else {
-//                    Toast.makeText(getActivity(), "Unexpected Error occcured! [Most common Error: Device might not be connected to Internet]",
-//                            Toast.LENGTH_LONG).show();
-//                }
-//            }
-//        });
-
+        prgDialog.show();
         client.post("http://128.199.190.130/select_all_place.php", params, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, String responseString) {
-                super.onSuccess(statusCode, headers, responseString);
-
-                Log.d("syncSQLiteMySQLDB", responseString);
-            }
-
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
                 super.onSuccess(statusCode, headers, response);
-                int id = 0;
-                String loc = "abc";
-                for (int i = 0; i < response.length(); ++i) {
-                    JSONObject rec = null;
-                    try {
-                        rec = response.getJSONObject(i);
-                        id = rec.getInt("placeid");
-                        loc = rec.getString("placename");
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
+                prgDialog.hide();
+                Log.d("syncSQLiteMySQLDB", response.toString());
+                updateSQLite(response.toString());
+            }
 
-                    Log.d("syncSQLiteMySQLDB", "id: " + id + " name: " + loc);
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+
+                prgDialog.hide();
+                Log.d("syncSQLiteMySQLDB", "status code: " + statusCode);
+                if (statusCode == 404) {
+                    Toast.makeText(getActivity(), "Requested resource not found", Toast.LENGTH_LONG).show();
+                } else if (statusCode == 500) {
+                    Toast.makeText(getActivity(), "Something went wrong at server end", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getActivity(), "Unexpected Error occcured! [Most common Error: Device might not be connected to Internet]",
+                            Toast.LENGTH_LONG).show();
                 }
-
             }
         });
 
@@ -289,26 +281,26 @@ public class SectionQuestmap extends Fragment implements LocationListener {
         try {
             // Extract JSON array from the response
             JSONArray arr = new JSONArray(response);
-            System.out.println(arr.length());
-            // If no of array elements is not zero
             if (arr.length() != 0) {
                 // Loop through each array element, get JSON object which has userid and username
                 for (int i = 0; i < arr.length(); i++) {
                     // Get JSON object
                     JSONObject obj = (JSONObject) arr.get(i);
-                    System.out.println(obj.get("userId"));
-                    System.out.println(obj.get("userName"));
                     // DB QueryValues Object to insert into SQLite
                     queryValues = new HashMap<String, String>();
-                    // Add userID extracted from Object
-                    queryValues.put("userId", obj.get("userId").toString());
-                    // Add userName extracted from Object
-                    queryValues.put("userName", obj.get("userName").toString());
-                    // Insert User into SQLite DB
+                    queryValues.put("placeid", obj.get("placeid").toString());
+                    queryValues.put("placename", obj.get("placename").toString());
+                    queryValues.put("qrcodeid", obj.get("qrcodeid").toString());
+                    queryValues.put("sensorid", obj.get("sensorid").toString());
+                    queryValues.put("latitude", obj.get("latitude").toString());
+                    queryValues.put("longitude", obj.get("longitude").toString());
+
+                    // Insert Place into SQLite DB
                     controller.insertPlace(queryValues);
+
                     HashMap<String, String> map = new HashMap<String, String>();
                     // Add status for each User in Hashmap
-                    map.put("Id", obj.get("userId").toString());
+                    map.put("id", obj.get("placeid").toString());
                     map.put("status", "1");
                     usersynclist.add(map);
                 }
@@ -325,7 +317,6 @@ public class SectionQuestmap extends Fragment implements LocationListener {
 
     // Method to inform remote MySQL DB about completion of Sync activity
     public void updateMySQLSyncSts(String json) {
-        System.out.println(json);
         AsyncHttpClient client = new AsyncHttpClient();
         RequestParams params = new RequestParams();
         params.put("syncsts", json);
@@ -347,6 +338,8 @@ public class SectionQuestmap extends Fragment implements LocationListener {
         Intent objIntent = new Intent(getActivity(), MainActivity.class);
         startActivity(objIntent);
     }
+
+
 }
 
 

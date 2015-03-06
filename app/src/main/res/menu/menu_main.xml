@@ -3,14 +3,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MainActivity">
     <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:title="@string/action_settings"
+        android:id="@+id/action_kmutt_location"
+        android:orderInCategory="101"
+        android:title="kmutt location"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_save"
+        android:id="@+id/action_sciplanet_location"
         android:orderInCategory="101"
-        android:title="test"
-        android:icon="@android:drawable/ic_menu_save"
-        app:showAsAction="always" />
+        android:title="sciplanet location"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_nsm_location"
+        android:orderInCategory="101"
+        android:title="nsm location"
+        app:showAsAction="never" />    <item
+        android:id="@+id/action_sync_data"
+        android:orderInCategory="101"
+        android:title="sync data"
+        app:showAsAction="never" />
 </menu>

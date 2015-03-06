@@ -5,7 +5,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,9 +13,6 @@ public class DBController extends SQLiteOpenHelper {
 
     public DBController(Context c) {
         super(c, "place.db", null, 1);
-        if(c==null){
-            Log.d("context", "c is null");
-        }
     }
 
     //Creates Table
@@ -66,7 +62,7 @@ public class DBController extends SQLiteOpenHelper {
      */
     public ArrayList<HashMap<String, String>> getAllPlaces() {
         ArrayList<HashMap<String, String>> usersList;
-        usersList = new ArrayList<HashMap<String, String>>();
+        usersList = new ArrayList<>();
         String selectQuery = "SELECT  * FROM places";
         SQLiteDatabase database = this.getWritableDatabase();
         Cursor cursor = database.rawQuery(selectQuery, null);

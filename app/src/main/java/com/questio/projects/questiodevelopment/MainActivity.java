@@ -23,16 +23,13 @@ import zbar.scanner.ZBarScannerActivity;
 
 
 public class MainActivity extends FragmentActivity implements ActionBar.TabListener {
-
     AppSectionsPagerAdapter mAppSectionsPagerAdapter;
-    int testSlack = 0;
     ViewPager mViewPager;
-
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Create the adapter that will return a fragment for each of the three primary sections
+        // Create the adapter that will return a fragment for each of the 5 primary sections
         // of the app.
         mAppSectionsPagerAdapter = new AppSectionsPagerAdapter(getSupportFragmentManager());
 
