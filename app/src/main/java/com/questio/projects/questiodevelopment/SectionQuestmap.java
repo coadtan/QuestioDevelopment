@@ -3,7 +3,10 @@ package com.questio.projects.questiodevelopment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.location.Address;
 import android.location.Criteria;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -16,9 +19,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,6 +32,7 @@ import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.loopj.android.http.AsyncHttpClient;
@@ -42,14 +46,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 
-//
-///**
-// * Created by CHAKRIT on 16/2/2558.
-// */
 public class SectionQuestmap extends Fragment implements LocationListener, GoogleMap.OnCameraChangeListener {
+    public static final String LOG_TAG = SectionQuestmap.class.getSimpleName();
+    Geocoder myLocation = new Geocoder(getActivity(), Locale.getDefault());
     DBController controller;
     ProgressDialog prgDialog;
     HashMap<String, String> queryValues;
@@ -57,61 +62,45 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
     MapView mMapView;
     private GoogleMap googleMap;
     TextView tv_place_detail;
-    TextView tv_place_latlng;
-    View v;
-    double currentLat;
-    double currentLng;
+    TextView tv_place_lat;
+    TextView tv_place_lng;
+    View sectionView;
+    double currentLat = 0;
+    double currentLng = 0;
+    String currentPlace = "";
     double kmuttLat = 13.651029;
     double kmuttLng = 100.494195;
+    ListAdapter adapter;
+    ArrayList<HashMap<String, String>> placeList;
+
+    private PlaceListAdapter mPlaceListAdapter;
+    ListView mListView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         controller = new DBController(getActivity());
         setHasOptionsMenu(true);
+        prgDialog = new ProgressDialog(getActivity());
+        prgDialog.setMessage("Sync place data, please wait...");
+        prgDialog.setCancelable(false);
 
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        this.v = inflater.inflate(R.layout.fragment_section_questmap, container,
-                false);
-
-
-        prgDialog = new ProgressDialog(getActivity());
-        prgDialog.setMessage("Transferring Data from Remote MySQL DB and Syncing SQLite. Please wait...");
-        prgDialog.setCancelable(false);
-        //  begin data
-        ArrayList<HashMap<String, String>> placeList = controller.getAllPlaces();
-        if (placeList.size() != 0) {
-            // Set the User Array list in ListView
-            ListAdapter adapter = new SimpleAdapter(getActivity(),
-                    placeList,
-                    R.layout.view_place_entry,
-                    new String[]{
-                            "placeid",
-                            "placename",
-                            "latitude",
-                            "longitude"
-                    },
-                    new int[]{
-                            R.id.placeId,
-                            R.id.placeName,
-                            R.id.placeLat,
-                            R.id.placeLng}
-            );
-            ListView myList = (ListView) v.findViewById(android.R.id.list);
-            myList.setAdapter(adapter);
-        }
-        // end data
-
-        mMapView = (MapView) v.findViewById(R.id.map);
+        sectionView = inflater.inflate(R.layout.fragment_section_questmap, container, false);
+//begin map
+        mMapView = (MapView) sectionView.findViewById(R.id.map);
         mMapView.onCreate(savedInstanceState);
 
         mMapView.onResume();// needed to get the map to display immediately
-        tv_place_detail = (TextView) v.findViewById(R.id.tv_place_detail);
-        tv_place_latlng = (TextView) v.findViewById(R.id.tv_place_latlng);
+        tv_place_detail = (TextView) sectionView.findViewById(R.id.tv_place_detail);
+        tv_place_lat = (TextView) sectionView.findViewById(R.id.tv_place_lat);
+        tv_place_lng = (TextView) sectionView.findViewById(R.id.tv_place_lng);
+
         try {
             MapsInitializer.initialize(getActivity().getApplicationContext());
         } catch (Exception e) {
@@ -129,18 +118,34 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
         }
 
 
-        LatLng coordinate = new LatLng(13.651029, 100.494195);
-        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(coordinate, 16));
+//        LatLng coordinate = new LatLng(13.651029, 100.494195);
+//        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(coordinate, 16));
         locationManager.requestLocationUpdates(provider, 20000, 0, this);
 
 
-        // Perform any camera updates here
-        return v;
+
+// end map
+// begin data
+        Cursor cursor = controller.getAllPlacesCursor();
+        mPlaceListAdapter = new PlaceListAdapter(getActivity(), cursor, 0);
+        mListView = (ListView) sectionView.findViewById(R.id.listview_place);
+        mListView.setAdapter(mPlaceListAdapter);
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                TextView tv = (TextView) view.findViewById(R.id.placeName);
+                Toast.makeText(getActivity(), tv.getText().toString() + " " + position, Toast.LENGTH_SHORT).show();
+            }
+        });
+// end data
+
+
+        return sectionView;
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.menu_questmap, menu);
     }
 
     @Override
@@ -167,6 +172,13 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
                 return true;
             case R.id.action_sync_data:
                 syncSQLiteMySQLDB();
+                return true;
+            case R.id.action_delect_all_data:
+                delectAllSQLiteRecords();
+                return true;
+            case R.id.action_qrcode_scan:
+                ((MainActivity) getActivity()).launchQRScanner(sectionView);
+                return true;
             default:
                 break;
         }
@@ -208,18 +220,30 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
 
     @Override
     public void onLocationChanged(Location location) {
-//        Toast.makeText(getActivity(), "ตำแหน่งล่าสุดเปลี่ยนแปลง", Toast.LENGTH_LONG).show();
-//        double lat = location.getLatitude();
-//        double lng = location.getLongitude();
-//        tv_place_detail.setText("unknown");
-//        tv_place_latlng.setText("lat: " +lat + " long: " + lng);
-//        if (mMarker != null) {
-//            mMarker.remove();
-//        }
-//        LatLng coordinate = new LatLng(lat, lng);
-//        mMarker = googleMap.addMarker(new MarkerOptions().position(coordinate).title("คุณอยู่นี่").snippet("ชื่อตัวละคร"));
-//        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(coordinate, 16));
-//        Log.d("QuestMap", coordinate + "");
+        List<Address> myList = null;
+        double lat = location.getLatitude();
+        double lng = location.getLongitude();
+        currentLat = lat;
+        currentLng = lng;
+        try {
+            myList = myLocation.getFromLocation(currentLat, currentLng, 1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if(!myList.isEmpty()){
+            Address address = myList.get(0);
+            currentPlace = address.getAddressLine(0);
+        }
+        if (mMarker != null) {
+            mMarker.remove();
+        }
+        LatLng coordinate = new LatLng(lat, lng);
+        mMarker = googleMap.addMarker(new MarkerOptions().position(coordinate).title("คุณอยู่นี่").snippet("ชื่อตัวละคร"));
+        tv_place_detail.setText(currentPlace);
+        tv_place_lat.setText("" + lat);
+        tv_place_lng.setText("" + lng);
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(coordinate, 16));
+        Log.d("QuestMap", coordinate + "");
     }
 
 
@@ -273,6 +297,11 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
 
     }
 
+    // Method to delete all data from places tabal
+    public void delectAllSQLiteRecords() {
+        controller.deleteAllPlace();
+    }
+
     public void updateSQLite(String response) {
         ArrayList<HashMap<String, String>> usersynclist;
         usersynclist = new ArrayList<HashMap<String, String>>();
@@ -307,7 +336,8 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
                 // Inform Remote MySQL DB about the completion of Sync activity by passing Sync status of Users
                 //  updateMySQLSyncSts(gson.toJson(usersynclist));
                 // Reload the Main Activity
-                reloadActivity();
+                // reloadActivity();
+
             }
         } catch (JSONException e) {
             // TODO Auto-generated catch block

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,8 +19,9 @@ public class DBController extends SQLiteOpenHelper {
     //Creates Table
     @Override
     public void onCreate(SQLiteDatabase database) {
+        Log.d("DBController", "onCreate() is called");
         String query;
-        query = "CREATE TABLE places ( placeid INTEGER," +
+        query = "CREATE TABLE places ( placeid INTEGER PRIMARY KEY," +
                 " placename TEXT," +
                 " qrcodeid INTEGER," +
                 " sensorid INTEGER," +
@@ -55,6 +57,11 @@ public class DBController extends SQLiteOpenHelper {
         database.close();
     }
 
+    public void deleteAllPlace() {
+        SQLiteDatabase database = this.getWritableDatabase();
+        database.delete("places", null, null);
+    }
+
     /**
      * Get list of Users from SQLite DB as Array List
      *
@@ -80,6 +87,15 @@ public class DBController extends SQLiteOpenHelper {
         }
         database.close();
         return usersList;
+    }
+
+    public Cursor getAllPlacesCursor() {
+        Cursor cursor;
+        String selectQuery = "SELECT  placeid as _id, placename, qrcodeid, sensorid, latitude,longitude FROM places";
+        SQLiteDatabase database = this.getWritableDatabase();
+        cursor = database.rawQuery(selectQuery, null);
+       // database.close();
+        return cursor;
     }
 
 }
