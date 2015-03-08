@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.questio.projects.questiodevelopment.PlaceObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -94,8 +96,28 @@ public class DBController extends SQLiteOpenHelper {
         String selectQuery = "SELECT  placeid as _id, placename, qrcodeid, sensorid, latitude,longitude FROM places";
         SQLiteDatabase database = this.getWritableDatabase();
         cursor = database.rawQuery(selectQuery, null);
-       // database.close();
+        // database.close();
         return cursor;
+    }
+
+    public ArrayList<PlaceObject> getAllPlaceArrayList() {
+        ArrayList<PlaceObject> list = new ArrayList<>();
+        PlaceObject po;
+        String selectQuery = "SELECT  * FROM places";
+        SQLiteDatabase database = this.getWritableDatabase();
+        Cursor cursor = database.rawQuery(selectQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                po = new PlaceObject();
+                po.setPlaceId(Integer.parseInt(cursor.getString(0)));
+                po.setPlaceName(cursor.getString(1));
+                po.setPlaceLat(Double.parseDouble(cursor.getString(4)));
+                po.setPlaceLng(Double.parseDouble(cursor.getString(5)));
+                list.add(po);
+            } while (cursor.moveToNext());
+        }
+        database.close();
+        return list;
     }
 
 }

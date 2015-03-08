@@ -1,7 +1,9 @@
 package com.questio.projects.questiodevelopment;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.location.Address;
@@ -54,9 +56,10 @@ import java.util.Locale;
 
 public class SectionQuestmap extends Fragment implements LocationListener, GoogleMap.OnCameraChangeListener {
     public static final String LOG_TAG = SectionQuestmap.class.getSimpleName();
-    Geocoder myLocation = new Geocoder(getActivity(), Locale.getDefault());
+    Geocoder myLocation;
     DBController controller;
     ProgressDialog prgDialog;
+    Cursor cursor;
     HashMap<String, String> queryValues;
     Marker mMarker;
     MapView mMapView;
@@ -72,7 +75,7 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
     double kmuttLng = 100.494195;
     ListAdapter adapter;
     ArrayList<HashMap<String, String>> placeList;
-
+    ArrayList<PlaceObject> placeListForDistance;
     private PlaceListAdapter mPlaceListAdapter;
     ListView mListView;
 
@@ -80,10 +83,12 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         controller = new DBController(getActivity());
+        placeListForDistance = controller.getAllPlaceArrayList();
         setHasOptionsMenu(true);
         prgDialog = new ProgressDialog(getActivity());
         prgDialog.setMessage("Sync place data, please wait...");
         prgDialog.setCancelable(false);
+        myLocation = new Geocoder(getActivity(), Locale.getDefault());
 
     }
 
@@ -94,6 +99,7 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
         sectionView = inflater.inflate(R.layout.fragment_section_questmap, container, false);
 //begin map
         mMapView = (MapView) sectionView.findViewById(R.id.map);
+        mMapView.onCreate(savedInstanceState);
         mMapView.onCreate(savedInstanceState);
 
         mMapView.onResume();// needed to get the map to display immediately
@@ -123,10 +129,10 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
         locationManager.requestLocationUpdates(provider, 20000, 0, this);
 
 
-
 // end map
 // begin data
-        Cursor cursor = controller.getAllPlacesCursor();
+        cursor = controller.getAllPlacesCursor();
+
         mPlaceListAdapter = new PlaceListAdapter(getActivity(), cursor, 0);
         mListView = (ListView) sectionView.findViewById(R.id.listview_place);
         mListView.setAdapter(mPlaceListAdapter);
@@ -157,10 +163,10 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
                 // calculate distance between 2 points
                 float[] results = new float[1];
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(kmuttLat, kmuttLng), 16.0f));
-
                 Location.distanceBetween(currentLat, currentLng,
                         kmuttLat, kmuttLng, results);
                 Toast.makeText(getActivity(), "" + results[0], Toast.LENGTH_LONG).show();
+
                 return true;
             case R.id.action_sciplanet_location:
                 currentLat = 0;
@@ -218,11 +224,27 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
         }
     }
 
+// This method call everytime when player's location change.
     @Override
     public void onLocationChanged(Location location) {
         List<Address> myList = null;
         double lat = location.getLatitude();
         double lng = location.getLongitude();
+        double placeLat = 0;
+        double placeLng = 0;
+        String placeName = "";
+        if (!placeListForDistance.isEmpty()) {
+            for (PlaceObject po : placeListForDistance) {
+                placeName = po.getPlaceName();
+                placeLat = po.getPlaceLat();
+                placeLng = po.getPlaceLng();
+
+                isEnterQuestMap(currentLat,currentLng,placeLat,placeLng);
+                Log.d(LOG_TAG, placeName + " " + placeLat + " " + placeLng);
+            }
+        }
+
+
         currentLat = lat;
         currentLng = lng;
         try {
@@ -230,7 +252,7 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if(!myList.isEmpty()){
+        if (!myList.isEmpty()) {
             Address address = myList.get(0);
             currentPlace = address.getAddressLine(0);
         }
@@ -263,7 +285,7 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
     }
 
 
-    // Method to Sync MySQL to SQLite DB
+// Method to Sync MySQL to SQLite DB
     public void syncSQLiteMySQLDB() {
         AsyncHttpClient client = new AsyncHttpClient();
         RequestParams params = new RequestParams();
@@ -297,7 +319,7 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
 
     }
 
-    // Method to delete all data from places tabal
+// Method to delete all data from places tabal
     public void delectAllSQLiteRecords() {
         controller.deleteAllPlace();
     }
@@ -345,7 +367,7 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
         }
     }
 
-    // Method to inform remote MySQL DB about completion of Sync activity
+// Method to inform remote MySQL DB about completion of Sync activity
     public void updateMySQLSyncSts(String json) {
         AsyncHttpClient client = new AsyncHttpClient();
         RequestParams params = new RequestParams();
@@ -369,6 +391,28 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
         startActivity(objIntent);
     }
 
+// Method to check if player enter QuestMap
+    public void isEnterQuestMap(double currentLat, double currentLng, double placeLat, double placeLng){
+
+        float[] results = new float[1];
+        Location.distanceBetween(currentLat, currentLng,
+                placeLat, placeLng, results);
+        if (results[0] < 500) {
+            new AlertDialog.Builder(getActivity())
+                    .setIcon(android.R.drawable.ic_dialog_info)
+                    .setTitle("Entering new Quest Map!")
+                    .setMessage("Do you want to begin your Quest now?")
+                    .setPositiveButton("Sure!", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Toast.makeText(getActivity(),"Quest Map Being Load", Toast.LENGTH_SHORT).show();
+                        }
+
+                    })
+                    .setNegativeButton("Later", null)
+                    .show();
+        }
+    }
 
 }
 
