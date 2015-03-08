@@ -65,31 +65,10 @@ public class DBController extends SQLiteOpenHelper {
     }
 
     /**
-     * Get list of Users from SQLite DB as Array List
+     * Get list of Place from SQLite DB as Cursor
      *
      * @return
      */
-    public ArrayList<HashMap<String, String>> getAllPlaces() {
-        ArrayList<HashMap<String, String>> usersList;
-        usersList = new ArrayList<>();
-        String selectQuery = "SELECT  * FROM places";
-        SQLiteDatabase database = this.getWritableDatabase();
-        Cursor cursor = database.rawQuery(selectQuery, null);
-        if (cursor.moveToFirst()) {
-            do {
-                HashMap<String, String> map = new HashMap<String, String>();
-                map.put("placeid", cursor.getString(0));
-                map.put("placename", cursor.getString(1));
-                map.put("qrcodeid", cursor.getString(2));
-                map.put("sensorid", cursor.getString(3));
-                map.put("latitude", cursor.getString(4));
-                map.put("longitude", cursor.getString(5));
-                usersList.add(map);
-            } while (cursor.moveToNext());
-        }
-        database.close();
-        return usersList;
-    }
 
     public Cursor getAllPlacesCursor() {
         Cursor cursor;

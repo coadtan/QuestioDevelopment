@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class SectionQuestmap extends Fragment implements LocationListener, GoogleMap.OnCameraChangeListener {
+    private GoogleMap googleMap;
     public static final String LOG_TAG = SectionQuestmap.class.getSimpleName();
     Geocoder myLocation;
     DBController controller;
@@ -63,21 +64,19 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
     HashMap<String, String> queryValues;
     Marker mMarker;
     MapView mMapView;
-    private GoogleMap googleMap;
+    View sectionView;
     TextView tv_place_detail;
     TextView tv_place_lat;
     TextView tv_place_lng;
-    View sectionView;
-    double currentLat = 0;
-    double currentLng = 0;
     String currentPlace = "";
     double kmuttLat = 13.651029;
     double kmuttLng = 100.494195;
+    double currentLat = 0;
+    double currentLng = 0;
     ListAdapter adapter;
-    ArrayList<HashMap<String, String>> placeList;
+    ListView mListView;
     ArrayList<PlaceObject> placeListForDistance;
     private PlaceListAdapter mPlaceListAdapter;
-    ListView mListView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -252,7 +251,7 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (!myList.isEmpty()) {
+        if (myList != null) {
             Address address = myList.get(0);
             currentPlace = address.getAddressLine(0);
         }
