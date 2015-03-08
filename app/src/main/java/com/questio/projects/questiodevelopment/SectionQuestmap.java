@@ -88,7 +88,7 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
         prgDialog.setMessage("Sync place data, please wait...");
         prgDialog.setCancelable(false);
         myLocation = new Geocoder(getActivity(), Locale.getDefault());
-
+        syncQuestList();
     }
 
 
@@ -283,7 +283,33 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
 
     }
 
+// Method to connect Quest vai JSON
+    public void syncQuestList(){
+        AsyncHttpClient client = new AsyncHttpClient();
+        RequestParams params = new RequestParams();
+        client.post("http://128.199.190.130/select_all_quest.php", params, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
+                super.onSuccess(statusCode, headers, response);
+                Log.d("syncQuestList", response.toString());
+            }
 
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+
+                Log.d("syncSQLiteMySQLDB", "status code: " + statusCode);
+                if (statusCode == 404) {
+                    Toast.makeText(getActivity(), "Requested resource not found", Toast.LENGTH_LONG).show();
+                } else if (statusCode == 500) {
+                    Toast.makeText(getActivity(), "Something went wrong at server end", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getActivity(), "Unexpected Error occcured! [Most common Error: Device might not be connected to Internet]",
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+    }
 // Method to Sync MySQL to SQLite DB
     public void syncSQLiteMySQLDB() {
         AsyncHttpClient client = new AsyncHttpClient();
