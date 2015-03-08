@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
     android:orientation="vertical">
+
 
     <com.google.android.gms.maps.MapView xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:map="http://schemas.android.com/apk/res-auto"
         android:id="@+id/map"
         android:layout_width="match_parent"
-        android:layout_height="400dp"
-        android:clickable="false"
-        map:liteMode="true" />
+        android:layout_height="300dp"
+        android:clickable="false" />
+
+
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
@@ -38,19 +42,37 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Lat Lng: "
+            android:text="Lat: "
             android:textSize="12sp" />
 
         <TextView
-            android:id="@+id/tv_place_latlng"
+            android:id="@+id/tv_place_lat"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="12sp" />
+
     </LinearLayout>
-    <Button
-        android:id="@+id/scan_btn"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_width="fill_parent"
-        android:onClick="launchQRScanner"
-        android:text="Scan" />
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Lng: "
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tv_place_lng"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp" />
+
+    </LinearLayout>
+    <include layout="@layout/fragment_section_placelist" />
+
 </LinearLayout>
+
+    <!-- android:background="@android:color/transparent"
+    android:gravity="center_vertical|center_horizontal" -->

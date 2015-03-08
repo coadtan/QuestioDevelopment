@@ -1,0 +1,39 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivity">
+    <item
+        android:id="@+id/action_kmutt_location"
+        android:orderInCategory="101"
+        android:title="kmutt location"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_sciplanet_location"
+        android:orderInCategory="101"
+        android:title="sciplanet location"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_nsm_location"
+        android:orderInCategory="101"
+        android:title="nsm location"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_sync_data"
+        android:orderInCategory="101"
+        android:title="sync data"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_delect_all_data"
+        android:orderInCategory="101"
+        android:title="delete all data"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_qrcode_scan"
+        android:orderInCategory="101"
+        android:title="scab qr"
+        android:icon="@drawable/ic_qrcode"
+        app:showAsAction="ifRoom" />
+
+
+</menu>
