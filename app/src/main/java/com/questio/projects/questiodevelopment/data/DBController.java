@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.questio.projects.questiodevelopment.PlaceObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -63,39 +65,38 @@ public class DBController extends SQLiteOpenHelper {
     }
 
     /**
-     * Get list of Users from SQLite DB as Array List
+     * Get list of Place from SQLite DB as Cursor
      *
      * @return
      */
-    public ArrayList<HashMap<String, String>> getAllPlaces() {
-        ArrayList<HashMap<String, String>> usersList;
-        usersList = new ArrayList<>();
-        String selectQuery = "SELECT  * FROM places";
-        SQLiteDatabase database = this.getWritableDatabase();
-        Cursor cursor = database.rawQuery(selectQuery, null);
-        if (cursor.moveToFirst()) {
-            do {
-                HashMap<String, String> map = new HashMap<String, String>();
-                map.put("placeid", cursor.getString(0));
-                map.put("placename", cursor.getString(1));
-                map.put("qrcodeid", cursor.getString(2));
-                map.put("sensorid", cursor.getString(3));
-                map.put("latitude", cursor.getString(4));
-                map.put("longitude", cursor.getString(5));
-                usersList.add(map);
-            } while (cursor.moveToNext());
-        }
-        database.close();
-        return usersList;
-    }
 
     public Cursor getAllPlacesCursor() {
         Cursor cursor;
         String selectQuery = "SELECT  placeid as _id, placename, qrcodeid, sensorid, latitude,longitude FROM places";
         SQLiteDatabase database = this.getWritableDatabase();
         cursor = database.rawQuery(selectQuery, null);
-       // database.close();
+        // database.close();
         return cursor;
+    }
+
+    public ArrayList<PlaceObject> getAllPlaceArrayList() {
+        ArrayList<PlaceObject> list = new ArrayList<>();
+        PlaceObject po;
+        String selectQuery = "SELECT  * FROM places";
+        SQLiteDatabase database = this.getWritableDatabase();
+        Cursor cursor = database.rawQuery(selectQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                po = new PlaceObject();
+                po.setPlaceId(Integer.parseInt(cursor.getString(0)));
+                po.setPlaceName(cursor.getString(1));
+                po.setPlaceLat(Double.parseDouble(cursor.getString(4)));
+                po.setPlaceLng(Double.parseDouble(cursor.getString(5)));
+                list.add(po);
+            } while (cursor.moveToNext());
+        }
+        database.close();
+        return list;
     }
 
 }
