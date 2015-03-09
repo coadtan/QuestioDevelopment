@@ -226,6 +226,7 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
 // This method call everytime when player's location change.
     @Override
     public void onLocationChanged(Location location) {
+        Log.d(LOG_TAG,"LocationChanged called!");
         List<Address> myList = null;
         double lat = location.getLatitude();
         double lng = location.getLongitude();
