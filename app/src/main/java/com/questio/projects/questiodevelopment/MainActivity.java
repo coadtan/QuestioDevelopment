@@ -4,6 +4,8 @@ import android.app.ActionBar;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -28,20 +30,24 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         // Create the adapter that will return a fragment for each of the 5 primary sections
         // of the app.
         mAppSectionsPagerAdapter = new AppSectionsPagerAdapter(getSupportFragmentManager());
-
         // Set up the action bar.
-
         final ActionBar actionBar = getActionBar();
-
         // Specify that the Home/Up button should not be enabled, since there is no hierarchical
         // parent.
         actionBar.setHomeButtonEnabled(false);
+//      actionBar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#00FFCC")));
+//      actionBar.setBackgroundDrawable();
 
+        BitmapDrawable background = new BitmapDrawable (BitmapFactory.decodeResource(getResources(), R.drawable.actionbar_wood));
+        background.setTileModeX(android.graphics.Shader.TileMode.REPEAT);
+        actionBar.setBackgroundDrawable(background);
         // Specify that we will be displaying tabs in the action bar.
+
+
+
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
         // Set up the ViewPager, attaching the adapter and setting up a listener for when the
