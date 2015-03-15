@@ -243,8 +243,6 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
                 Log.d(LOG_TAG, placeName + " " + placeLat + " " + placeLng);
             }
         }
-
-
         currentLat = lat;
         currentLng = lng;
         try {

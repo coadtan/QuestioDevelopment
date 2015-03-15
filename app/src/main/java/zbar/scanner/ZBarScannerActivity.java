@@ -6,9 +6,12 @@ import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import net.sourceforge.zbar.Config;
 import net.sourceforge.zbar.Image;
@@ -16,9 +19,11 @@ import net.sourceforge.zbar.ImageScanner;
 import net.sourceforge.zbar.Symbol;
 import net.sourceforge.zbar.SymbolSet;
 
-public class ZBarScannerActivity extends Activity implements Camera.PreviewCallback, ZBarConstants {
+public class ZBarScannerActivity extends FragmentActivity implements Camera.PreviewCallback, ZBarConstants {
 
     private static final String TAG = "ZBarScannerActivity";
+    private static final int ZBAR_SCANNER_REQUEST = 0;
+    private static final int ZBAR_QR_SCANNER_REQUEST = 1;
     private CameraPreview mPreview;
     private Camera mCamera;
     private ImageScanner mScanner;
@@ -33,7 +38,6 @@ public class ZBarScannerActivity extends Activity implements Camera.PreviewCallb
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         if(!isCameraAvailable()) {
             // Cancel request if there is no rear-facing camera.
             cancelRequest();
@@ -66,6 +70,33 @@ public class ZBarScannerActivity extends Activity implements Camera.PreviewCallb
             for (int symbol : symbols) {
                 mScanner.setConfig(symbol, Config.ENABLE, 1);
             }
+        }
+    }
+
+    public void launchQRScanner(View v) {
+        if (isCameraAvailable()) {
+            Intent intent = new Intent(this, ZBarScannerActivity.class);
+            intent.putExtra(ZBarConstants.SCAN_MODES, new int[]{Symbol.QRCODE});
+            startActivityForResult(intent, ZBAR_SCANNER_REQUEST);
+        } else {
+            Toast.makeText(this, "Rear Facing Camera Unavailable", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case ZBAR_SCANNER_REQUEST:
+            case ZBAR_QR_SCANNER_REQUEST:
+                if (resultCode == RESULT_OK) {
+                    Toast.makeText(this, "Scan Result = " + data.getStringExtra(ZBarConstants.SCAN_RESULT), Toast.LENGTH_SHORT).show();
+                } else if (resultCode == RESULT_CANCELED && data != null) {
+                    String error = data.getStringExtra(ZBarConstants.ERROR_INFO);
+                    if (!TextUtils.isEmpty(error)) {
+                        Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
+                    }
+                }
+                break;
         }
     }
 
