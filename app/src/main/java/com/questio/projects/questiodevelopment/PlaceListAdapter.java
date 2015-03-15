@@ -61,5 +61,6 @@ public class PlaceListAdapter extends CursorAdapter {
         viewHolder.place_detail.setText("Detail Of Place...");
 
 
+
     }
 }

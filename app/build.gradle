@@ -26,6 +26,7 @@ dependencies {
     compile files('lib/zbar.jar')
     compile files('lib/android-async-http-1.4.6.jar')
     compile files('libs/gson-2.3.1.jar')
+    compile files('libs/gdirectionsapiutils_gps4030500')
 }
 
 

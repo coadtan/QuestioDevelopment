@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
@@ -30,6 +31,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -47,12 +49,16 @@ import org.apache.http.Header;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Document;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+
+import AndroidGoogleDirectionAndPlaceLibrary.GoogleDirection;
+
 
 public class SectionQuestmap extends Fragment implements LocationListener, GoogleMap.OnCameraChangeListener {
     public static final String LOG_TAG = SectionQuestmap.class.getSimpleName();
@@ -143,14 +149,30 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
 
         cursor = controller.getAllPlacesCursor();
 
+        if( cursor != null && cursor.moveToFirst() ){
+        }
+
+
         mPlaceListAdapter = new PlaceListAdapter(getActivity(), cursor, 0);
         mListView = (ListView) sectionView.findViewById(R.id.listview_place);
         mListView.setAdapter(mPlaceListAdapter);
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                TextView tv = (TextView) view.findViewById(R.id.placeName);
-                Toast.makeText(getActivity(), tv.getText().toString() + " " + position, Toast.LENGTH_SHORT).show();
+                TextView tvLat = (TextView) view.findViewById(R.id.placeLat);
+                TextView tvLng = (TextView) view.findViewById(R.id.placeLng);
+                LatLng fromPosition = new LatLng(currentLat, currentLng);
+                LatLng toPosition = new LatLng(Double.parseDouble(tvLat.getText().toString()), Double.parseDouble(tvLng.getText().toString()));
+                googleMap.clear();
+                googleMap.addMarker(new MarkerOptions().position(toPosition).title("Destination"));
+
+                GoogleDirection gd = new GoogleDirection(getActivity());
+                gd.request(fromPosition, toPosition, GoogleDirection.MODE_DRIVING);
+                gd.setOnDirectionResponseListener(new GoogleDirection.OnDirectionResponseListener() {
+                    public void onResponse(String status, Document doc, GoogleDirection gd) {
+                        googleMap.addPolyline(gd.getPolyline(doc, 3, Color.BLUE));
+                    }
+                });
             }
         });
 // end place list
@@ -227,10 +249,11 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
 
     @Override
     public void onCameraChange(CameraPosition cameraPosition) {
-        float fixZoom = 16.0f;
-        if (cameraPosition.zoom != fixZoom) {
-            googleMap.animateCamera(CameraUpdateFactory.zoomTo(fixZoom));
-        }
+//        float fixZoomMin = 16.0f;
+//        if (cameraPosition.zoom  < fixZoomMin) {
+//            googleMap.animateCamera(CameraUpdateFactory.zoomTo(fixZoomMin));
+//        }
+
     }
 
     // This method call everytime when player's location change.
@@ -269,12 +292,10 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
             mMarker.remove();
         }
         LatLng coordinate = new LatLng(currentLat, currentLng);
-        mMarker = googleMap.addMarker(new MarkerOptions().position(coordinate).title("คุณอยู่นี่").snippet("ชื่อตัวละคร"));
-
+        mMarker = googleMap.addMarker(new MarkerOptions().position(coordinate).title("คุณอยู่นี่").snippet("ชื่อตัวละคร").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
         tv_place_detail.setText("" + currentPlace);
         tv_place_lat.setText("" + currentLat);
         tv_place_lng.setText("" + currentLng);
-        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(coordinate, 16));
         Log.d(LOG_TAG, coordinate + "");
     }
 
@@ -294,33 +315,6 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
 
     }
 
-    // Method to connect Quest vai JSON
-    public void syncQuestList() {
-        AsyncHttpClient client = new AsyncHttpClient();
-        RequestParams params = new RequestParams();
-        client.post("http://128.199.190.130/select_all_quest.php", params, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-                super.onSuccess(statusCode, headers, response);
-                Log.d(LOG_TAG, response.toString());
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
-                super.onFailure(statusCode, headers, throwable, errorResponse);
-
-                Log.d(LOG_TAG, "status code: " + statusCode);
-                if (statusCode == 404) {
-                    Toast.makeText(getActivity(), "Requested resource not found", Toast.LENGTH_LONG).show();
-                } else if (statusCode == 500) {
-                    Toast.makeText(getActivity(), "Something went wrong at server end", Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(getActivity(), "Unexpected Error occcured! [Most common Error: Device might not be connected to Internet]",
-                            Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-    }
 
     // Method to Sync MySQL to SQLite DB
     public void syncSQLiteMySQLDB() {
@@ -332,7 +326,6 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
             public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
                 super.onSuccess(statusCode, headers, response);
                 prgDialog.hide();
-                Log.d(LOG_TAG, response.toString());
                 updateSQLite(response.toString());
             }
 
@@ -366,11 +359,9 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
             // Extract JSON array from the response
             JSONArray arr = new JSONArray(response);
             if (arr.length() != 0) {
-                // Loop through each array element, get JSON object which has userid and username
+
                 for (int i = 0; i < arr.length(); i++) {
-                    // Get JSON object
                     JSONObject obj = (JSONObject) arr.get(i);
-                    // DB QueryValues Object to insert into SQLite
                     queryValues = new HashMap<String, String>();
                     queryValues.put("placeid", obj.get("placeid").toString());
                     queryValues.put("placename", obj.get("placename").toString());
@@ -378,8 +369,6 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
                     queryValues.put("sensorid", obj.get("sensorid").toString());
                     queryValues.put("latitude", obj.get("latitude").toString());
                     queryValues.put("longitude", obj.get("longitude").toString());
-
-                    // Insert Place into SQLite DB
                     controller.insertPlace(queryValues);
 
                 }
@@ -412,6 +401,7 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
                     .show();
         }
     }
+
 
 }
 

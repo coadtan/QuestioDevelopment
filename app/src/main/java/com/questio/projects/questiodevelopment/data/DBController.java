@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class DBController extends SQLiteOpenHelper {
-
+    private static final String LOG_TAG = DBController.class.getSimpleName();
     public DBController(Context c) {
         super(c, "place.db", null, 1);
     }
@@ -27,8 +27,8 @@ public class DBController extends SQLiteOpenHelper {
                 " placename TEXT," +
                 " qrcodeid INTEGER," +
                 " sensorid INTEGER," +
-                " latitude REAL," +
-                " longitude REAL)";
+                " latitude TEXT," +
+                " longitude TEXT)";
         database.execSQL(query);
     }
 

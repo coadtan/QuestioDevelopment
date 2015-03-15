@@ -89,6 +89,8 @@
     <orderEntry type="library" exported="" name="zbar" level="project" />
     <orderEntry type="library" exported="" name="1_zbar" level="project" />
     <orderEntry type="library" exported="" name="gson-2.3.1" level="project" />
+    <orderEntry type="library" exported="" name="gdirectionsapiutils_gps4030500" level="project" />
+    <orderEntry type="library" exported="" name="1_gdirectionsapiutils_gps4030500" level="project" />
     <orderEntry type="library" exported="" name="support-v4-21.0.3" level="project" />
     <orderEntry type="library" exported="" name="support-annotations-21.0.3" level="project" />
     <orderEntry type="library" exported="" name="android-async-http-1.4.6" level="project" />
