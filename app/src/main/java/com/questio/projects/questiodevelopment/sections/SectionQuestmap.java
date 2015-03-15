@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.location.Address;
@@ -42,6 +43,7 @@ import com.loopj.android.http.RequestParams;
 import com.questio.projects.questiodevelopment.MainActivity;
 import com.questio.projects.questiodevelopment.PlaceListAdapter;
 import com.questio.projects.questiodevelopment.PlaceObject;
+import com.questio.projects.questiodevelopment.QuestBrowsing;
 import com.questio.projects.questiodevelopment.R;
 import com.questio.projects.questiodevelopment.data.DBController;
 
@@ -192,22 +194,24 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
             case R.id.action_kmutt_location:
                 currentLat = 13.652948;
                 currentLng = 100.494281;
-                // calculate distance between 2 points
-                float[] results = new float[1];
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(kmuttLat, kmuttLng), 16.0f));
-                Location.distanceBetween(currentLat, currentLng,
-                        kmuttLat, kmuttLng, results);
-                Toast.makeText(getActivity(), "" + results[0], Toast.LENGTH_LONG).show();
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.651029, 100.494195), 16.0f));
+                isEnterQuestMap(currentLat, currentLng,13.651029, 100.494195,1, "kmutt");
+                return true;
 
-                return true;
             case R.id.action_sciplanet_location:
-                currentLat = 0;
-                currentLng = 0;
+                currentLat = 13.720424;
+                currentLng = 100.583359;
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.720176, 100.583163), 16.0f));
+                isEnterQuestMap(currentLat, currentLng,13.720176, 100.583163,2, "sciplanet");
                 return true;
+
             case R.id.action_nsm_location:
-                currentLat = 0;
-                currentLng = 0;
+                currentLat = 14.048520;
+                currentLng = 100.716716;
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(14.048624, 100.717188), 16.0f));
+                isEnterQuestMap(currentLat, currentLng,14.048624, 100.717188,3, "nsm");
                 return true;
+
             case R.id.action_sync_data:
                 syncSQLiteMySQLDB();
                 return true;
@@ -267,13 +271,15 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
         double placeLat = 0;
         double placeLng = 0;
         String placeName = "";
+        int placeId = 0;
         if (!placeListForDistance.isEmpty()) {
             for (PlaceObject po : placeListForDistance) {
+                placeId = po.getPlaceId();
                 placeName = po.getPlaceName();
                 placeLat = po.getPlaceLat();
                 placeLng = po.getPlaceLng();
 
-                isEnterQuestMap(currentLat, currentLng, placeLat, placeLng);
+                isEnterQuestMap(currentLat, currentLng, placeLat, placeLng,placeId, placeName);
                 Log.d(LOG_TAG, placeName + " " + placeLat + " " + placeLng);
             }
         }
@@ -380,7 +386,7 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
 
 
     // Method to check if player enter QuestMap
-    public void isEnterQuestMap(double currentLat, double currentLng, double placeLat, double placeLng) {
+    public void isEnterQuestMap(double currentLat, double currentLng, double placeLat, double placeLng, final int placeId, final String placeName) {
 
         float[] results = new float[1];
         Location.distanceBetween(currentLat, currentLng,
@@ -388,16 +394,19 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
         if (results[0] < 500) {
             new AlertDialog.Builder(getActivity())
                     .setIcon(android.R.drawable.ic_dialog_info)
-                    .setTitle("Entering new Quest Map!")
-                    .setMessage("Do you want to begin your Quest now?")
-                    .setPositiveButton("Sure!", new DialogInterface.OnClickListener() {
+                    .setTitle("เข้าสู่ "+ placeName +"!")
+                    .setMessage("จะเริ่มทำภารกิจในที่แห่งนี้เลยไหมครับ")
+                    .setPositiveButton("เอาเลย!", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            Toast.makeText(getActivity(), "Quest Map Being Load", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(getActivity(), QuestBrowsing.class);
+                            intent.putExtra("placeId", placeId);
+                            intent.putExtra("placeName", placeName);
+                            startActivity(intent);
                         }
 
                     })
-                    .setNegativeButton("Later", null)
+                    .setNegativeButton("ไม่", null)
                     .show();
         }
     }

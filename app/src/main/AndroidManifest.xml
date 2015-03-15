@@ -44,7 +44,8 @@
             android:name="zbar.scanner.ZBarScannerActivity"
             android:label="@string/app_name"
             android:screenOrientation="landscape" />
-
+        <activity android:name=".QuestBrowsing"
+            android:label="Quest"/>
     </application>
 
 </manifest>
