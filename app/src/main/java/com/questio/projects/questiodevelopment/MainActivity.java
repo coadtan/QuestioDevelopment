@@ -5,19 +5,25 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
+import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.widget.Toast;
+
+import com.questio.projects.questiodevelopment.sections.SectionAvatar;
+import com.questio.projects.questiodevelopment.sections.SectionCommunity;
+import com.questio.projects.questiodevelopment.sections.SectionPrize;
+import com.questio.projects.questiodevelopment.sections.SectionQuestmap;
+import com.questio.projects.questiodevelopment.sections.SectionSearch;
 
 import net.sourceforge.zbar.Symbol;
 
@@ -25,51 +31,61 @@ import zbar.scanner.ZBarConstants;
 import zbar.scanner.ZBarScannerActivity;
 
 
-public class MainActivity extends ActionBarActivity implements ActionBar.TabListener {
+public class MainActivity extends FragmentActivity implements ActionBar.TabListener {
     AppSectionsPagerAdapter mAppSectionsPagerAdapter;
     ViewPager mViewPager;
-    Toolbar toolbar;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        // Create the adapter that will return a fragment for each of the 5 primary sections
+        // of the app.
         mAppSectionsPagerAdapter = new AppSectionsPagerAdapter(getSupportFragmentManager());
-        toolbar = (Toolbar) findViewById(R.id.app_bar);
-        setSupportActionBar(toolbar);
+
+        final ActionBar actionBar = getActionBar();
+
+        BitmapDrawable background = new BitmapDrawable(BitmapFactory.decodeResource(getResources(), R.drawable.actionbar_wood));
+        background.setTileModeX(Shader.TileMode.MIRROR);
+        if (actionBar != null) {
+            actionBar.setBackgroundDrawable(background);
+            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        }
 
 
-
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-
-
-
-        // Set up the ViewPager, attaching the adapter and setting up a listener for when the
-        // user swipes between sections.
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mAppSectionsPagerAdapter);
         mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
-                // When swiping between different app sections, select the corresponding tab.
-                // We can also use ActionBar.Tab#select() to do this if we have a reference to the
-                // Tab.
-                actionBar.setSelectedNavigationItem(position);
+                if (actionBar != null) {
+                    actionBar.setSelectedNavigationItem(position);
+                }
             }
         });
-
-        int[] ic_action_tab = new int[5];
-        ic_action_tab[0] = R.drawable.ic_action_community;
-        ic_action_tab[1] = R.drawable.ic_action_searchquest;
-        ic_action_tab[2] = R.drawable.ic_action_questmap;
-        ic_action_tab[3] = R.drawable.ic_action_prize;
-        ic_action_tab[4] = R.drawable.ic_action_avatar;
-
-
         for (int i = 0; i < mAppSectionsPagerAdapter.getCount(); i++) {
-                actionBar.addTab(actionBar.newTab().setIcon(ic_action_tab[i]).setTabListener(this));
+            int ic_action_tab = 0;
+            switch (i) {
+                case 0:
+                    ic_action_tab = R.drawable.ic_action_community;
+                    break;
+                case 1:
+                    ic_action_tab = R.drawable.ic_action_searchquest;
+                    break;
+                case 2:
+                    ic_action_tab = R.drawable.ic_action_questmap;
+                    break;
+                case 3:
+                    ic_action_tab = R.drawable.ic_action_prize;
+                    break;
+                case 4:
+                    ic_action_tab = R.drawable.ic_action_avatar;
+                    break;
+            }
+
+            if (actionBar != null) {
+                actionBar.addTab(actionBar.newTab().setIcon(ic_action_tab).setTabListener(this));
+            }
         }
-
-
     }
 
     @Override
@@ -81,6 +97,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
     @Override
     public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+
     }
 
     @Override
@@ -144,8 +161,12 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
     }
 
+
+    // BEGIN QR SCANNER PART //
+
     private static final int ZBAR_SCANNER_REQUEST = 0;
     private static final int ZBAR_QR_SCANNER_REQUEST = 1;
+
 
     public void launchQRScanner(View v) {
         if (isCameraAvailable()) {
@@ -155,6 +176,11 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         } else {
             Toast.makeText(this, "Rear Facing Camera Unavailable", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    public boolean isCameraAvailable() {
+        PackageManager pm = getPackageManager();
+        return pm.hasSystemFeature(PackageManager.FEATURE_CAMERA);
     }
 
     @Override
@@ -173,9 +199,6 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
                 break;
         }
     }
-    public boolean isCameraAvailable() {
-        PackageManager pm = getPackageManager();
-        return pm.hasSystemFeature(PackageManager.FEATURE_CAMERA);
-    }
+
 
 }

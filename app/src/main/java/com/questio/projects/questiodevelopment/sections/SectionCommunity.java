@@ -1,10 +1,12 @@
-package com.questio.projects.questiodevelopment;
+package com.questio.projects.questiodevelopment.sections;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.questio.projects.questiodevelopment.R;
 
 /**
  * Created by CHAKRIT on 16/2/2558.

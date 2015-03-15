@@ -20,20 +20,21 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme">
+        android:theme="@android:style/Theme.Holo.Light.DarkActionBar">
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyAZlEfE3NqK1nfpYHQ8jvzAqxJYy1yqjjI" />
+            android:value="AIzaSyAUMlogcXYzkaef6c3qMsnYE6RX267PKws" />
+
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
-
 
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -41,6 +42,7 @@
         <activity android:name="zbar.scanner.ZBarScannerActivity"
             android:screenOrientation="landscape"
             android:label="@string/app_name" />
+
     </application>
 
 </manifest>
