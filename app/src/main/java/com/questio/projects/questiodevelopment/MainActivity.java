@@ -22,7 +22,7 @@ import android.widget.Toast;
 import com.questio.projects.questiodevelopment.sections.SectionAvatar;
 import com.questio.projects.questiodevelopment.sections.SectionCommunity;
 import com.questio.projects.questiodevelopment.sections.SectionPrize;
-import com.questio.projects.questiodevelopment.sections.SectionQuestMap;
+import com.questio.projects.questiodevelopment.sections.SectionQuestmap;
 import com.questio.projects.questiodevelopment.sections.SectionSearch;
 
 import net.sourceforge.zbar.Symbol;
@@ -135,7 +135,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                     fragment = new SectionSearch();
                     break;
                 case 2:
-                    fragment = new SectionQuestMap();
+                    fragment = new SectionQuestmap();
                     break;
                 case 3:
                     fragment = new SectionPrize();

@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.location.Address;
-import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
@@ -23,10 +22,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -37,20 +34,13 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.JsonHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
+import com.questio.projects.questiodevelopment.DatabaseHelper;
 import com.questio.projects.questiodevelopment.MainActivity;
-import com.questio.projects.questiodevelopment.PlaceListAdapter;
-import com.questio.projects.questiodevelopment.PlaceObject;
 import com.questio.projects.questiodevelopment.QuestBrowsing;
 import com.questio.projects.questiodevelopment.R;
-import com.questio.projects.questiodevelopment.data.DBController;
+import com.questio.projects.questiodevelopment.adapters.PlaceListAdapter;
+import com.questio.projects.questiodevelopment.models.PlaceObject;
 
-import org.apache.http.Header;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.w3c.dom.Document;
 
 import java.io.IOException;
@@ -64,14 +54,18 @@ import AndroidGoogleDirectionAndPlaceLibrary.GoogleDirection;
 
 public class SectionQuestmap extends Fragment implements LocationListener, GoogleMap.OnCameraChangeListener {
     public static final String LOG_TAG = SectionQuestmap.class.getSimpleName();
-    // location attribute
+    Context mContext;
+    DatabaseHelper databaseHelper;
+    Boolean isGPSEnabled;
+    Boolean isNetworkEnabled;
+    Boolean canGetLocation;
+    final long MIN_TIME_BW_UPDATES = 10000;
+    final float MIN_DISTANCE_CHANGE_FOR_UPDATES = 0;
     GoogleMap googleMap;
     LocationManager locationManager;
     Location location;
     Geocoder myLocation;
-    String provider;
-    //  end location attribute
-    DBController controller;
+    String jsonAllPlace;
     ProgressDialog prgDialog;
     Cursor cursor;
     HashMap<String, String> queryValues;
@@ -82,35 +76,27 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
     TextView tv_place_lat;
     TextView tv_place_lng;
     String currentPlace = "";
-    double kmuttLat = 13.651029;
-    double kmuttLng = 100.494195;
     double currentLat = 0;
     double currentLng = 0;
-    ListAdapter adapter;
     ListView mListView;
     ArrayList<PlaceObject> placeListForDistance;
     PlaceListAdapter mPlaceListAdapter;
-    List<Address> placeList = null;
+    PlaceObject po;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        controller = new DBController(getActivity());
-        placeListForDistance = controller.getAllPlaceArrayList();
-
-
-        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        provider = locationManager.getBestProvider(new Criteria(), true);
-        Log.d(LOG_TAG, provider);
-        location = locationManager.getLastKnownLocation(provider);
-        currentLat = location.getLatitude();
-        currentLng = location.getLongitude();
-
+        mContext = getActivity();
+        databaseHelper = new DatabaseHelper(mContext);
+        placeListForDistance = databaseHelper.getAllPlaceArrayList();
+        po = new PlaceObject(mContext);
+        location = getLocation();
         setHasOptionsMenu(true);
-        prgDialog = new ProgressDialog(getActivity());
+        prgDialog = new ProgressDialog(mContext);
         prgDialog.setMessage("Sync place data, please wait...");
         prgDialog.setCancelable(false);
-        myLocation = new Geocoder(getActivity(), Locale.getDefault());
+        myLocation = new Geocoder(mContext, Locale.getDefault());
     }
 
 
@@ -118,19 +104,16 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         sectionView = inflater.inflate(R.layout.fragment_section_questmap, container, false);
-//begin map
         tv_place_detail = (TextView) sectionView.findViewById(R.id.tv_place_detail);
         tv_place_lat = (TextView) sectionView.findViewById(R.id.tv_place_lat);
         tv_place_lng = (TextView) sectionView.findViewById(R.id.tv_place_lng);
         mMapView = (MapView) sectionView.findViewById(R.id.map);
         mMapView.onCreate(savedInstanceState);
-        mMapView.onCreate(savedInstanceState);
-
-        mMapView.onResume();// needed to get the map to display immediately
+        mMapView.onResume();
 
 
         try {
-            MapsInitializer.initialize(getActivity().getApplicationContext());
+            MapsInitializer.initialize(mContext.getApplicationContext());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -140,22 +123,9 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
         googleMap.setMyLocationEnabled(true);
         googleMap.setOnCameraChangeListener(this);
 
+        cursor = databaseHelper.getAllPlacesCursor();
 
-        if (location != null) {
-            onLocationChanged(location);
-        }
-
-        locationManager.requestLocationUpdates(provider, 10000, 0, this);
-// end map
-// begin place list
-
-        cursor = controller.getAllPlacesCursor();
-
-        if( cursor != null && cursor.moveToFirst() ){
-        }
-
-
-        mPlaceListAdapter = new PlaceListAdapter(getActivity(), cursor, 0);
+        mPlaceListAdapter = new PlaceListAdapter(mContext, cursor, 0);
         mListView = (ListView) sectionView.findViewById(R.id.listview_place);
         mListView.setAdapter(mPlaceListAdapter);
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -168,7 +138,7 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
                 googleMap.clear();
                 googleMap.addMarker(new MarkerOptions().position(toPosition).title("Destination"));
 
-                GoogleDirection gd = new GoogleDirection(getActivity());
+                GoogleDirection gd = new GoogleDirection(mContext);
                 gd.request(fromPosition, toPosition, GoogleDirection.MODE_DRIVING);
                 gd.setOnDirectionResponseListener(new GoogleDirection.OnDirectionResponseListener() {
                     public void onResponse(String status, Document doc, GoogleDirection gd) {
@@ -177,8 +147,6 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
                 });
             }
         });
-// end place list
-
 
         return sectionView;
     }
@@ -195,31 +163,31 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
                 currentLat = 13.652948;
                 currentLng = 100.494281;
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.651029, 100.494195), 16.0f));
-                isEnterQuestMap(currentLat, currentLng,13.651029, 100.494195,1, "kmutt");
+                isEnterQuestMap(currentLat, currentLng, 13.651029, 100.494195, 1, "kmutt");
                 return true;
 
             case R.id.action_sciplanet_location:
                 currentLat = 13.720424;
                 currentLng = 100.583359;
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.720176, 100.583163), 16.0f));
-                isEnterQuestMap(currentLat, currentLng,13.720176, 100.583163,2, "sciplanet");
+                isEnterQuestMap(currentLat, currentLng, 13.720176, 100.583163, 2, "sciplanet");
                 return true;
 
             case R.id.action_nsm_location:
                 currentLat = 14.048520;
                 currentLng = 100.716716;
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(14.048624, 100.717188), 16.0f));
-                isEnterQuestMap(currentLat, currentLng,14.048624, 100.717188,3, "nsm");
+                isEnterQuestMap(currentLat, currentLng, 14.048624, 100.717188, 3, "nsm");
                 return true;
 
             case R.id.action_sync_data:
-                syncSQLiteMySQLDB();
+                po.updatePlaceSQLite();
                 return true;
             case R.id.action_delect_all_data:
-                delectAllSQLiteRecords();
+                po.delectAllPlace();
                 return true;
             case R.id.action_qrcode_scan:
-                ((MainActivity) getActivity()).launchQRScanner(sectionView);
+                ((MainActivity) mContext).launchQRScanner(sectionView);
                 return true;
             default:
                 break;
@@ -257,14 +225,13 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
 //        if (cameraPosition.zoom  < fixZoomMin) {
 //            googleMap.animateCamera(CameraUpdateFactory.zoomTo(fixZoomMin));
 //        }
-
     }
 
     // This method call everytime when player's location change.
     @Override
     public void onLocationChanged(Location location) {
-        Log.d(LOG_TAG, "LocationChanged called!");
-        List<Address> myList = null;
+        Log.d(LOG_TAG, "onLocationChanged: LocationChanged called!");
+        List<Address> myList;
         currentLat = location.getLatitude();
         currentLng = location.getLongitude();
 
@@ -279,7 +246,7 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
                 placeLat = po.getPlaceLat();
                 placeLng = po.getPlaceLng();
 
-                isEnterQuestMap(currentLat, currentLng, placeLat, placeLng,placeId, placeName);
+                isEnterQuestMap(currentLat, currentLng, placeLat, placeLng, placeId, placeName);
                 Log.d(LOG_TAG, placeName + " " + placeLat + " " + placeLng);
             }
         }
@@ -305,7 +272,6 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
         Log.d(LOG_TAG, coordinate + "");
     }
 
-
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
 
@@ -322,69 +288,6 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
     }
 
 
-    // Method to Sync MySQL to SQLite DB
-    public void syncSQLiteMySQLDB() {
-        AsyncHttpClient client = new AsyncHttpClient();
-        RequestParams params = new RequestParams();
-        prgDialog.show();
-        client.post("http://128.199.190.130/select_all_place.php", params, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-                super.onSuccess(statusCode, headers, response);
-                prgDialog.hide();
-                updateSQLite(response.toString());
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
-                super.onFailure(statusCode, headers, throwable, errorResponse);
-
-                prgDialog.hide();
-                Log.d(LOG_TAG, "status code: " + statusCode);
-                if (statusCode == 404) {
-                    Toast.makeText(getActivity(), "Requested resource not found", Toast.LENGTH_LONG).show();
-                } else if (statusCode == 500) {
-                    Toast.makeText(getActivity(), "Something went wrong at server end", Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(getActivity(), "Unexpected Error occcured! [Most common Error: Device might not be connected to Internet]",
-                            Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-
-
-    }
-
-    // Method to delete all data from places tabal
-    public void delectAllSQLiteRecords() {
-        controller.deleteAllPlace();
-    }
-
-    public void updateSQLite(String response) {
-        try {
-            // Extract JSON array from the response
-            JSONArray arr = new JSONArray(response);
-            if (arr.length() != 0) {
-
-                for (int i = 0; i < arr.length(); i++) {
-                    JSONObject obj = (JSONObject) arr.get(i);
-                    queryValues = new HashMap<String, String>();
-                    queryValues.put("placeid", obj.get("placeid").toString());
-                    queryValues.put("placename", obj.get("placename").toString());
-                    queryValues.put("qrcodeid", obj.get("qrcodeid").toString());
-                    queryValues.put("sensorid", obj.get("sensorid").toString());
-                    queryValues.put("latitude", obj.get("latitude").toString());
-                    queryValues.put("longitude", obj.get("longitude").toString());
-                    controller.insertPlace(queryValues);
-
-                }
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-
     // Method to check if player enter QuestMap
     public void isEnterQuestMap(double currentLat, double currentLng, double placeLat, double placeLng, final int placeId, final String placeName) {
 
@@ -392,14 +295,14 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
         Location.distanceBetween(currentLat, currentLng,
                 placeLat, placeLng, results);
         if (results[0] < 500) {
-            new AlertDialog.Builder(getActivity())
+            new AlertDialog.Builder(mContext)
                     .setIcon(android.R.drawable.ic_dialog_info)
-                    .setTitle("เข้าสู่ "+ placeName +"!")
+                    .setTitle("เข้าสู่ " + placeName + "!")
                     .setMessage("จะเริ่มทำภารกิจในที่แห่งนี้เลยไหมครับ")
                     .setPositiveButton("เอาเลย!", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            Intent intent = new Intent(getActivity(), QuestBrowsing.class);
+                            Intent intent = new Intent(mContext, QuestBrowsing.class);
                             intent.putExtra("placeId", placeId);
                             intent.putExtra("placeName", placeName);
                             startActivity(intent);
@@ -409,6 +312,59 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
                     .setNegativeButton("ไม่", null)
                     .show();
         }
+    }
+
+    public Location getLocation() {
+        try {
+            locationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
+            // getting GPS status
+            isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            // getting network status
+            isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+            if (!isGPSEnabled && !isNetworkEnabled) {
+                // no network provider is enabled
+            } else {
+                this.canGetLocation = true;
+                if (isNetworkEnabled) {
+                    locationManager.requestLocationUpdates(
+                            LocationManager.NETWORK_PROVIDER,
+                            MIN_TIME_BW_UPDATES,
+                            MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+                    Log.d(LOG_TAG, "getLocation(): Network Enabled");
+                    if (locationManager != null) {
+                        location = locationManager
+                                .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                        if (location != null) {
+                            currentLat = location.getLatitude();
+                            currentLng = location.getLongitude();
+                        }
+                    }
+                }
+                // if GPS Enabled get lat/long using GPS Services
+                if (isGPSEnabled) {
+                    if (location == null) {
+                        locationManager.requestLocationUpdates(
+                                LocationManager.GPS_PROVIDER,
+                                MIN_TIME_BW_UPDATES,
+                                MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+                        Log.d(LOG_TAG, "getLocation(): GPS Enabled");
+                        if (locationManager != null) {
+                            location = locationManager
+                                    .getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                            if (location != null) {
+                                currentLat = location.getLatitude();
+                                currentLng = location.getLongitude();
+                            }
+                        }
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return location;
     }
 
 
