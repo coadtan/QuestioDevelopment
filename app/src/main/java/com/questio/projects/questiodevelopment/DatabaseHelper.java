@@ -1,4 +1,4 @@
-package com.questio.projects.questiodevelopment.data;
+package com.questio.projects.questiodevelopment;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -7,28 +7,31 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import com.questio.projects.questiodevelopment.PlaceObject;
+import com.questio.projects.questiodevelopment.models.PlaceObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class DBController extends SQLiteOpenHelper {
-    private static final String LOG_TAG = DBController.class.getSimpleName();
-    public DBController(Context c) {
+public class DatabaseHelper extends SQLiteOpenHelper {
+    private static final String LOG_TAG = DatabaseHelper.class.getSimpleName();
+
+    public DatabaseHelper(Context c) {
         super(c, "place.db", null, 1);
     }
 
     //Creates Table
     @Override
     public void onCreate(SQLiteDatabase database) {
-        Log.d("DBController", "onCreate() is called");
+        Log.d("DatabaseHelper", "onCreate() is called");
         String query;
         query = "CREATE TABLE places ( placeid INTEGER PRIMARY KEY," +
                 " placename TEXT," +
-                " qrcodeid INTEGER," +
+                " placefullname TEXT," +
+                " qrcode INTEGER," +
                 " sensorid INTEGER," +
                 " latitude TEXT," +
-                " longitude TEXT)";
+                " longitude TEXT," +
+                " radius INTEGER)";
         database.execSQL(query);
     }
 
@@ -51,10 +54,12 @@ public class DBController extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put("placeid", queryValues.get("placeid"));
         values.put("placename", queryValues.get("placename"));
-        values.put("qrcodeid", queryValues.get("qrcodeid"));
+        values.put("placefullname", queryValues.get("placefullname"));
+        values.put("qrcode", queryValues.get("qrcode"));
         values.put("sensorid", queryValues.get("sensorid"));
         values.put("latitude", queryValues.get("latitude"));
         values.put("longitude", queryValues.get("longitude"));
+        values.put("radius", queryValues.get("radius"));
         database.insert("places", null, values);
         database.close();
     }
@@ -72,10 +77,9 @@ public class DBController extends SQLiteOpenHelper {
 
     public Cursor getAllPlacesCursor() {
         Cursor cursor;
-        String selectQuery = "SELECT  placeid as _id, placename, qrcodeid, sensorid, latitude,longitude FROM places";
+        String selectQuery = "SELECT  placeid as _id, placename, placefullname, qrcode, sensorid, latitude, longitude, radius FROM places";
         SQLiteDatabase database = this.getWritableDatabase();
         cursor = database.rawQuery(selectQuery, null);
-        // database.close();
         return cursor;
     }
 

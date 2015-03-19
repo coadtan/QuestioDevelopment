@@ -1,4 +1,4 @@
-package com.questio.projects.questiodevelopment;
+package com.questio.projects.questiodevelopment.adapters;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.questio.projects.questiodevelopment.R;
 
 /**
  * Created by coad4u4ever on 07-Mar-15.
@@ -54,11 +56,13 @@ public class PlaceListAdapter extends CursorAdapter {
         viewHolder.placeId.setText(placeIdString);
         String placeNameString = cursor.getString(1);
         viewHolder.placeName.setText(placeNameString);
-        String placeLatString = cursor.getString(4);
+        String placeFullNameString = cursor.getString(2);
+        viewHolder.place_detail.setText(placeFullNameString);
+        String placeLatString = cursor.getString(5);
         viewHolder.placeLat.setText(placeLatString);
-        String placeLngString = cursor.getString(5);
+        String placeLngString = cursor.getString(6);
         viewHolder.placeLng.setText(placeLngString);
-        viewHolder.place_detail.setText("Detail Of Place...");
+
 
 
 
