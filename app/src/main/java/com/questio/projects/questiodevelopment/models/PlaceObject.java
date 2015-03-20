@@ -1,7 +1,10 @@
 package com.questio.projects.questiodevelopment.models;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.loopj.android.http.AsyncHttpClient;
@@ -14,14 +17,20 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class PlaceObject extends Activity{
     private static final String LOG_TAG = PlaceObject.class.getSimpleName();
     private int placeId;
     private String placeName;
-    private double placeLat;
-    private double placeLng;
+    private String placefullname;
+    private String placeQrCode;
+    private String placeSensorId;
+    private double placeLatitude;
+    private double placeLongitude;
+    private double placeRadius;
+
     HashMap<String, String> queryValues;
     DatabaseHelper databaseHelper;
     Context mContext;
@@ -64,20 +73,52 @@ public class PlaceObject extends Activity{
         this.placeName = placeName;
     }
 
-    public double getPlaceLat() {
-        return placeLat;
+    public String getPlacefullname() {
+        return placefullname;
     }
 
-    public void setPlaceLat(double placeLat) {
-        this.placeLat = placeLat;
+    public void setPlacefullname(String placefullname) {
+        this.placefullname = placefullname;
     }
 
-    public double getPlaceLng() {
-        return placeLng;
+    public String getPlaceQrCode() {
+        return placeQrCode;
     }
 
-    public void setPlaceLng(double placeLng) {
-        this.placeLng = placeLng;
+    public void setPlaceQrCode(String placeQrCode) {
+        this.placeQrCode = placeQrCode;
+    }
+
+    public String getPlaceSensorId() {
+        return placeSensorId;
+    }
+
+    public void setPlaceSensorId(String placeSensorId) {
+        this.placeSensorId = placeSensorId;
+    }
+
+    public double getPlaceLatitude() {
+        return placeLatitude;
+    }
+
+    public void setPlaceLatitude(double placeLatitude) {
+        this.placeLatitude = placeLatitude;
+    }
+
+    public double getPlaceLongitude() {
+        return placeLongitude;
+    }
+
+    public void setPlaceLongitude(double placeLongitude) {
+        this.placeLongitude = placeLongitude;
+    }
+
+    public double getPlaceRadius() {
+        return placeRadius;
+    }
+
+    public void setPlaceRadius(double placeRadius) {
+        this.placeRadius = placeRadius;
     }
 
     public void updatePlaceSQLite() {
@@ -122,7 +163,7 @@ public class PlaceObject extends Activity{
                     queryValues.put(PLACE_LONGITUDE, obj.get(PLACE_LONGITUDE).toString());
                     queryValues.put(PLACE_RADIUS, obj.get(PLACE_RADIUS).toString());
 
-                    databaseHelper.insertPlace(queryValues);
+                    insertPlace(queryValues);
 
                 }
             }
@@ -134,10 +175,56 @@ public class PlaceObject extends Activity{
 
     public void delectAllPlace() {
         databaseHelper = new DatabaseHelper(mContext);
-        databaseHelper.deleteAllPlace();
+        SQLiteDatabase database = databaseHelper.getWritableDatabase();
+        database.delete("places", null, null);
         databaseHelper.close();
     }
 
 
+    public void insertPlace(HashMap<String, String> queryValues) {
+        databaseHelper = new DatabaseHelper(mContext);
+        SQLiteDatabase database = databaseHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("placeid", queryValues.get("placeid"));
+        values.put("placename", queryValues.get("placename"));
+        values.put("placefullname", queryValues.get("placefullname"));
+        values.put("qrcode", queryValues.get("qrcode"));
+        values.put("sensorid", queryValues.get("sensorid"));
+        values.put("latitude", queryValues.get("latitude"));
+        values.put("longitude", queryValues.get("longitude"));
+        values.put("radius", queryValues.get("radius"));
+        database.insert("places", null, values);
+        database.close();
+    }
 
+    public Cursor getAllPlacesCursor() {
+        Cursor cursor;
+        String selectQuery = "SELECT  placeid as _id, placename, placefullname, qrcode, sensorid, latitude, longitude, radius FROM places";
+        databaseHelper = new DatabaseHelper(mContext);
+        SQLiteDatabase database = databaseHelper.getWritableDatabase();
+        cursor = database.rawQuery(selectQuery, null);
+        return cursor;
+    }
+
+
+    public ArrayList<PlaceObject> getAllPlaceArrayList() {
+        ArrayList<PlaceObject> list = new ArrayList<>();
+        PlaceObject po;
+        String selectQuery = "SELECT  * FROM places";
+        databaseHelper = new DatabaseHelper(mContext);
+        SQLiteDatabase database = databaseHelper.getWritableDatabase();
+        Cursor cursor = database.rawQuery(selectQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                po = new PlaceObject();
+                po.setPlaceId(Integer.parseInt(cursor.getString(0)));
+                po.setPlaceName(cursor.getString(1));
+                po.setPlaceLatitude(Double.parseDouble(cursor.getString(4)));
+                po.setPlaceLongitude(Double.parseDouble(cursor.getString(5)));
+                list.add(po);
+            } while (cursor.moveToNext());
+        }
+        database.close();
+        return list;
+    }
 }

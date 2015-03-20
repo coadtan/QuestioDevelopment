@@ -45,7 +45,6 @@ import org.w3c.dom.Document;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -65,10 +64,8 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
     LocationManager locationManager;
     Location location;
     Geocoder myLocation;
-    String jsonAllPlace;
     ProgressDialog prgDialog;
     Cursor cursor;
-    HashMap<String, String> queryValues;
     Marker mMarker;
     MapView mMapView;
     View sectionView;
@@ -88,9 +85,9 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = getActivity();
-        databaseHelper = new DatabaseHelper(mContext);
-        placeListForDistance = databaseHelper.getAllPlaceArrayList();
         po = new PlaceObject(mContext);
+        databaseHelper = new DatabaseHelper(mContext);
+        placeListForDistance = po.getAllPlaceArrayList();
         location = getLocation();
         setHasOptionsMenu(true);
         prgDialog = new ProgressDialog(mContext);
@@ -123,7 +120,7 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
         googleMap.setMyLocationEnabled(true);
         googleMap.setOnCameraChangeListener(this);
 
-        cursor = databaseHelper.getAllPlacesCursor();
+        cursor = po.getAllPlacesCursor();
 
         mPlaceListAdapter = new PlaceListAdapter(mContext, cursor, 0);
         mListView = (ListView) sectionView.findViewById(R.id.listview_place);
@@ -243,8 +240,8 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
             for (PlaceObject po : placeListForDistance) {
                 placeId = po.getPlaceId();
                 placeName = po.getPlaceName();
-                placeLat = po.getPlaceLat();
-                placeLng = po.getPlaceLng();
+                placeLat = po.getPlaceLatitude();
+                placeLng = po.getPlaceLongitude();
 
                 isEnterQuestMap(currentLat, currentLng, placeLat, placeLng, placeId, placeName);
                 Log.d(LOG_TAG, placeName + " " + placeLat + " " + placeLng);
