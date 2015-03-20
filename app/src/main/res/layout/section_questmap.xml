@@ -71,7 +71,7 @@
 
     </LinearLayout>
 
-    <include layout="@layout/fragment_section_placelist" />
+    <include layout="@layout/section_placelist" />
 
 </LinearLayout>
 

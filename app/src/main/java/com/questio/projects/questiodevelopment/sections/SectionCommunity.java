@@ -15,7 +15,7 @@ public class SectionCommunity extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_section_community, container, false);
+        View rootView = inflater.inflate(R.layout.section_community, container, false);
         Bundle args = getArguments();
 
         return rootView;

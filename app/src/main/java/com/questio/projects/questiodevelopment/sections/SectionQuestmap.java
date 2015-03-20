@@ -100,7 +100,7 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        sectionView = inflater.inflate(R.layout.fragment_section_questmap, container, false);
+        sectionView = inflater.inflate(R.layout.section_questmap, container, false);
         tv_place_detail = (TextView) sectionView.findViewById(R.id.tv_place_detail);
         tv_place_lat = (TextView) sectionView.findViewById(R.id.tv_place_lat);
         tv_place_lng = (TextView) sectionView.findViewById(R.id.tv_place_lng);

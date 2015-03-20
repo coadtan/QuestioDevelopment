@@ -1,29 +1,17 @@
 package com.questio.projects.questiodevelopment;
 
-import android.app.ActionBar;
-import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.BitmapFactory;
-import android.graphics.Shader;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.widget.Toast;
 
-import com.questio.projects.questiodevelopment.sections.SectionAvatar;
-import com.questio.projects.questiodevelopment.sections.SectionCommunity;
-import com.questio.projects.questiodevelopment.sections.SectionPrize;
-import com.questio.projects.questiodevelopment.sections.SectionQuestmap;
-import com.questio.projects.questiodevelopment.sections.SectionSearch;
+import com.questio.projects.questiodevelopment.slidingtabs.SlidingTabsBasicFragment;
 
 import net.sourceforge.zbar.Symbol;
 
@@ -31,61 +19,73 @@ import zbar.scanner.ZBarConstants;
 import zbar.scanner.ZBarScannerActivity;
 
 
-public class MainActivity extends FragmentActivity implements ActionBar.TabListener {
-    AppSectionsPagerAdapter mAppSectionsPagerAdapter;
-    ViewPager mViewPager;
+public class MainActivity extends ActionBarActivity{
+
+    private static final String LOG_TAG = MainActivity.class.getSimpleName();
+    Toolbar toolbar;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        // Create the adapter that will return a fragment for each of the 5 primary sections
-        // of the app.
-        mAppSectionsPagerAdapter = new AppSectionsPagerAdapter(getSupportFragmentManager());
+        toolbar = (Toolbar) findViewById(R.id.app_bar);
+        setSupportActionBar(toolbar);
+        toolbar.setLogo(R.mipmap.ic_launcher);
 
-        final ActionBar actionBar = getActionBar();
-
-        BitmapDrawable background = new BitmapDrawable(BitmapFactory.decodeResource(getResources(), R.drawable.actionbar_wood));
-        background.setTileModeX(Shader.TileMode.MIRROR);
-        if (actionBar != null) {
-            actionBar.setBackgroundDrawable(background);
-            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        if (savedInstanceState == null) {
+            android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            SlidingTabsBasicFragment fragment = new SlidingTabsBasicFragment();
+            transaction.replace(R.id.sample_content_fragment, fragment);
+            transaction.commit();
         }
 
+//        // Create the adapter that will return a fragment for each of the 5 primary sections
+//        // of the app.
+//        mAppSectionsPagerAdapter = new AppSectionsPagerAdapter(getSupportFragmentManager());
+//
+//        final ActionBar actionBar = getActionBar();
+//
+//        BitmapDrawable background = new BitmapDrawable(BitmapFactory.decodeResource(getResources(), R.drawable.actionbar_wood));
+//        background.setTileModeX(Shader.TileMode.MIRROR);
+//        if (actionBar != null) {
+//            actionBar.setBackgroundDrawable(background);
+//            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+//        }
+//
 
-        mViewPager = (ViewPager) findViewById(R.id.pager);
-        mViewPager.setAdapter(mAppSectionsPagerAdapter);
-        mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-            @Override
-            public void onPageSelected(int position) {
-                if (actionBar != null) {
-                    actionBar.setSelectedNavigationItem(position);
-                }
-            }
-        });
-        for (int i = 0; i < mAppSectionsPagerAdapter.getCount(); i++) {
-            int ic_action_tab = 0;
-            switch (i) {
-                case 0:
-                    ic_action_tab = R.drawable.ic_action_community;
-                    break;
-                case 1:
-                    ic_action_tab = R.drawable.ic_action_searchquest;
-                    break;
-                case 2:
-                    ic_action_tab = R.drawable.ic_action_questmap;
-                    break;
-                case 3:
-                    ic_action_tab = R.drawable.ic_action_prize;
-                    break;
-                case 4:
-                    ic_action_tab = R.drawable.ic_action_avatar;
-                    break;
-            }
-
-            if (actionBar != null) {
-                actionBar.addTab(actionBar.newTab().setIcon(ic_action_tab).setTabListener(this));
-            }
-        }
+//        mViewPager = (ViewPager) findViewById(R.id.pager);
+//        mViewPager.setAdapter(mAppSectionsPagerAdapter);
+//        mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+//            @Override
+//            public void onPageSelected(int position) {
+//                if (actionBar != null) {
+//                    actionBar.setSelectedNavigationItem(position);
+//                }
+//            }
+//        });
+//        for (int i = 0; i < mAppSectionsPagerAdapter.getCount(); i++) {
+//            int ic_action_tab = 0;
+//            switch (i) {
+//                case 0:
+//                    ic_action_tab = R.drawable.ic_action_community;
+//                    break;
+//                case 1:
+//                    ic_action_tab = R.drawable.ic_action_searchquest;
+//                    break;
+//                case 2:
+//                    ic_action_tab = R.drawable.ic_action_questmap;
+//                    break;
+//                case 3:
+//                    ic_action_tab = R.drawable.ic_action_prize;
+//                    break;
+//                case 4:
+//                    ic_action_tab = R.drawable.ic_action_avatar;
+//                    break;
+//            }
+//
+//            if (actionBar != null) {
+//                actionBar.addTab(actionBar.newTab().setIcon(ic_action_tab).setTabListener(this));
+//            }
+//        }
     }
 
     @Override
@@ -95,71 +95,57 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         return true;
     }
 
-    @Override
-    public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-
-    }
-
-    @Override
-    public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-        // When the given tab is selected, switch to the corresponding page in the ViewPager.
-        mViewPager.setCurrentItem(tab.getPosition());
-    }
-
-    @Override
-    public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-    }
 
 
-    /**
+    /*
      * A {@link android.support.v4.app.FragmentPagerAdapter} that returns a fragment corresponding to one of the primary
      * sections of the app.
      */
 
 
-    public static class AppSectionsPagerAdapter extends FragmentPagerAdapter {
-
-        public AppSectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-
-        @Override
-        public Fragment getItem(int i) {
-            Fragment fragment;
-            switch (i) {
-                case 0:
-                    fragment = new SectionCommunity();
-                    break;
-                case 1:
-                    fragment = new SectionSearch();
-                    break;
-                case 2:
-                    fragment = new SectionQuestmap();
-                    break;
-                case 3:
-                    fragment = new SectionPrize();
-                    break;
-                default:
-                    fragment = new SectionAvatar();
-                    break;
-            }
-
-
-            Bundle args = new Bundle();
-            fragment.setArguments(args);
-            return fragment;
-
-
-        }
-
-        @Override
-        public int getCount() {
-            return 5;
-        }
-
-
-    }
+//    public static class AppSectionsPagerAdapter extends FragmentPagerAdapter {
+//
+//        public AppSectionsPagerAdapter(FragmentManager fm) {
+//            super(fm);
+//        }
+//
+//
+//        @Override
+//        public Fragment getItem(int i) {
+//            Fragment fragment;
+//            switch (i) {
+//                case 0:
+//                    fragment = new SectionCommunity();
+//                    break;
+//                case 1:
+//                    fragment = new SectionSearch();
+//                    break;
+//                case 2:
+//                    fragment = new SectionQuestmap();
+//                    break;
+//                case 3:
+//                    fragment = new SectionPrize();
+//                    break;
+//                default:
+//                    fragment = new SectionAvatar();
+//                    break;
+//            }
+//
+//
+//            Bundle args = new Bundle();
+//            fragment.setArguments(args);
+//            return fragment;
+//
+//
+//        }
+//
+//        @Override
+//        public int getCount() {
+//            return 5;
+//        }
+//
+//
+//    }
 
 
     // BEGIN QR SCANNER PART //

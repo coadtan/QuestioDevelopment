@@ -15,8 +15,7 @@ public class SectionPrize extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-       // View rootView = inflater.inflate(R.layout.fragment_section_prize, container, false);
-        View rootView = inflater.inflate(R.layout.fragment_quest_quiz, container, false);
+        View rootView = inflater.inflate(R.layout.section_prize, container, false);
         Bundle args = getArguments();
         return rootView;
     }
