@@ -3,20 +3,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MainActivity">
     <item
-        android:id="@+id/action_kmutt_location"
+        android:id="@+id/action_sit_location"
         android:orderInCategory="101"
-        android:title="kmutt location"
+        android:title="fake sit location"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_sciplanet_location"
+        android:id="@+id/action_lib_location"
         android:orderInCategory="101"
-        android:title="sciplanet location"
+        android:title="fake library location"
         app:showAsAction="never" />
-    <item
-        android:id="@+id/action_nsm_location"
-        android:orderInCategory="101"
-        android:title="nsm location"
-        app:showAsAction="never" />
+
     <item
         android:id="@+id/action_sync_data"
         android:orderInCategory="101"

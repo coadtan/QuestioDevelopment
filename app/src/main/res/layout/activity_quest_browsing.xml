@@ -4,28 +4,139 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <include
+        android:id="@+id/questAppBar"
+        layout="@layout/app_bar" />
+
     <ImageView
+        android:id="@+id/questImgPlace"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/imgQuest_FloorPlan"
         android:layout_gravity="center_horizontal"
-        android:scaleType="centerCrop"/>
+        android:scaleType="centerCrop" />
 
-    <TextView
-        android:id="@+id/textView4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="quest"
-        android:textSize="80dp" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/textView6"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="quest"
-        android:textSize="80dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.8"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/questPlaceName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:fontFamily="sans-serif-condensed"
+                        android:paddingLeft="10dp"
+                        android:text="placename"
+                        android:textSize="25sp" />
+
+                    <TextView
+                        android:id="@+id/questPlaceFullName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:fontFamily="sans-serif-condensed"
+                        android:paddingLeft="10dp"
+                        android:text="placefullname"
+                        android:textSize="15sp" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/questBtnMoreDetail"
+                    style="@android:style/MediaButton.Next"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:drawableBottom="@drawable/ic_moredetail" />
+
+            </LinearLayout>
+
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="?android:attr/listPreferredItemHeight"
+                android:orientation="horizontal">
+
+                <FrameLayout
+                    android:layout_width="60dp"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_telephone5" />
+
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="3"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/quest_phone1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-condensed"
+                        android:text="phone1" />
+
+                    <TextView
+                        android:id="@+id/quest_phone2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-condensed"
+                        android:text="phone2" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="7"
+                    android:orientation="horizontal">
+
+                    <FrameLayout
+                        android:layout_width="60dp"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_domain1" />
+
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/quest_domain"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="domain name"/>
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>
+

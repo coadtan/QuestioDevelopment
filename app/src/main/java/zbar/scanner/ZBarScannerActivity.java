@@ -8,10 +8,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.Toast;
+
+import com.questio.projects.questiodevelopment.R;
 
 import net.sourceforge.zbar.Config;
 import net.sourceforge.zbar.Image;
@@ -38,7 +40,8 @@ public class ZBarScannerActivity extends FragmentActivity implements Camera.Prev
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(!isCameraAvailable()) {
+
+        if (!isCameraAvailable()) {
             // Cancel request if there is no rear-facing camera.
             cancelRequest();
             return;
@@ -47,19 +50,25 @@ public class ZBarScannerActivity extends FragmentActivity implements Camera.Prev
         // Hide the window title.
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        setContentView(R.layout.zbar_layout_area);
 
         mAutoFocusHandler = new Handler();
-
         // Create and configure the ImageScanner;
         setupScanner();
 
         // Create a RelativeLayout container that will hold a SurfaceView,
         // and set it as the content of our activity.
-        mPreview = new CameraPreview(this, this, autoFocusCB);
-        setContentView(mPreview);
+        FrameLayout zbarLayout = (FrameLayout) findViewById(R.id.cameraPreview);
+        mPreview = new CameraPreview(zbarLayout.getContext(), this, autoFocusCB);
+
+
+        mPreview.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        zbarLayout.addView(mPreview);
     }
 
+
     public void setupScanner() {
+       // setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         mScanner = new ImageScanner();
         mScanner.setConfig(0, Config.X_DENSITY, 3);
         mScanner.setConfig(0, Config.Y_DENSITY, 3);
@@ -73,15 +82,6 @@ public class ZBarScannerActivity extends FragmentActivity implements Camera.Prev
         }
     }
 
-    public void launchQRScanner(View v) {
-        if (isCameraAvailable()) {
-            Intent intent = new Intent(this, ZBarScannerActivity.class);
-            intent.putExtra(ZBarConstants.SCAN_MODES, new int[]{Symbol.QRCODE});
-            startActivityForResult(intent, ZBAR_SCANNER_REQUEST);
-        } else {
-            Toast.makeText(this, "Rear Facing Camera Unavailable", Toast.LENGTH_SHORT).show();
-        }
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -98,6 +98,8 @@ public class ZBarScannerActivity extends FragmentActivity implements Camera.Prev
                 }
                 break;
         }
+
+
     }
 
     @Override
@@ -106,7 +108,7 @@ public class ZBarScannerActivity extends FragmentActivity implements Camera.Prev
 
         // Open the default i.e. the first rear facing camera.
         mCamera = Camera.open();
-        if(mCamera == null) {
+        if (mCamera == null) {
             // Cancel request if mCamera is null.
             cancelRequest();
             return;
@@ -154,12 +156,16 @@ public class ZBarScannerActivity extends FragmentActivity implements Camera.Prev
     }
 
     public void onPreviewFrame(byte[] data, Camera camera) {
+
         Camera.Parameters parameters = camera.getParameters();
         Camera.Size size = parameters.getPreviewSize();
 
         Image barcode = new Image(size.width, size.height, "Y800");
+
         barcode.setData(data);
 
+        //barcode.setCrop(left,top,width,height).
+        //barcode.setCrop(10, 10, 10, 10);
         int result = mScanner.scanImage(barcode);
 
         if (result != 0) {
@@ -181,9 +187,10 @@ public class ZBarScannerActivity extends FragmentActivity implements Camera.Prev
             }
         }
     }
+
     private Runnable doAutoFocus = new Runnable() {
         public void run() {
-            if(mCamera != null && mPreviewing) {
+            if (mCamera != null && mPreviewing) {
                 mCamera.autoFocus(autoFocusCB);
             }
         }

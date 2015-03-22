@@ -170,6 +170,7 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
             mCamera.startPreview();
             mCamera.autoFocus(mAutoFocusCallback);
         }
+
     }
 
 }
