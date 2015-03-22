@@ -11,16 +11,19 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.questio.projects.questiodevelopment.DatabaseHelper;
+import com.questio.projects.questiodevelopment.HttpHelper;
 
 import org.apache.http.Header;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
-public class PlaceObject extends Activity{
+public class PlaceObject extends Activity implements Serializable {
     private static final String LOG_TAG = PlaceObject.class.getSimpleName();
     private int placeId;
     private String placeName;
@@ -34,7 +37,6 @@ public class PlaceObject extends Activity{
     HashMap<String, String> queryValues;
     DatabaseHelper databaseHelper;
     Context mContext;
-    private final String URL = "http://52.74.64.61/api/select_all_place.php";
     public final String PLACE_ID = "placeid";
     public final String PLACE_NAME = "placename";
     public final String PLACE_FULL_NAME = "placefullname";
@@ -43,8 +45,6 @@ public class PlaceObject extends Activity{
     public final String PLACE_LATITUDE = "latitude";
     public final String PLACE_LONGITUDE = "longitude";
     public final String PLACE_RADIUS = "radius";
-
-
 
 
     public PlaceObject() {
@@ -122,6 +122,7 @@ public class PlaceObject extends Activity{
     }
 
     public void updatePlaceSQLite() {
+        String URL = "http://52.74.64.61/api/select_all_place.php";
         AsyncHttpClient client = new AsyncHttpClient();
         RequestParams params = new RequestParams();
         client.post(URL, params, new JsonHttpResponseHandler() {
@@ -139,7 +140,6 @@ public class PlaceObject extends Activity{
         });
 
 
-
     }
 
 
@@ -147,7 +147,7 @@ public class PlaceObject extends Activity{
         try {
             databaseHelper = new DatabaseHelper(mContext);
             // Extract JSON array from the response
-            Log.d(LOG_TAG,response);
+            Log.d(LOG_TAG, response);
             JSONArray arr = new JSONArray(response);
             if (arr.length() != 0) {
 
@@ -198,6 +198,14 @@ public class PlaceObject extends Activity{
     }
 
     public Cursor getAllPlacesCursor() {
+        // 0 placeid as _id
+        // 1 placename
+        // 2 placefullname
+        // 3 qrcode
+        // 4 sensorid
+        // 5 latitude
+        // 6 longitude
+        // 7 radius
         Cursor cursor;
         String selectQuery = "SELECT  placeid as _id, placename, placefullname, qrcode, sensorid, latitude, longitude, radius FROM places";
         databaseHelper = new DatabaseHelper(mContext);
@@ -219,12 +227,48 @@ public class PlaceObject extends Activity{
                 po = new PlaceObject();
                 po.setPlaceId(Integer.parseInt(cursor.getString(0)));
                 po.setPlaceName(cursor.getString(1));
-                po.setPlaceLatitude(Double.parseDouble(cursor.getString(4)));
-                po.setPlaceLongitude(Double.parseDouble(cursor.getString(5)));
+                po.setPlacefullname(cursor.getString(2));
+                po.setPlaceQrCode(cursor.getString(3));
+                po.setPlaceSensorId(cursor.getString(4));
+                po.setPlaceLatitude(Double.parseDouble(cursor.getString(5)));
+                po.setPlaceLongitude(Double.parseDouble(cursor.getString(6)));
+                po.setPlaceRadius(Double.parseDouble(cursor.getString(7)));
                 list.add(po);
             } while (cursor.moveToNext());
         }
         database.close();
         return list;
     }
+
+    public HashMap getPalceDetailJSON(String id) {
+        JSONObject json;
+        HashMap hashMap = new HashMap();
+
+        try {
+            String response = new HttpHelper().execute("http://52.74.64.61/api/select_all_placedetails_by_placeid.php?placeid=" + id).get();
+            JSONArray arr = new JSONArray(response);
+            if (arr.length() != 0) {
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject obj = (JSONObject) arr.get(i);
+                    hashMap.put("placeid", obj.get("placeid").toString());
+                    hashMap.put("placedetail", obj.get("placedetails").toString());
+                    hashMap.put("placecontact1", obj.get("phonecontact1").toString());
+                    hashMap.put("placecontact2", obj.get("phonecontact2").toString());
+                    hashMap.put("placewebsite", obj.get("website").toString());
+                    hashMap.put("placepicpath", obj.get("placelogopath").toString());
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        return hashMap;
+    }
+
+
 }
+
+

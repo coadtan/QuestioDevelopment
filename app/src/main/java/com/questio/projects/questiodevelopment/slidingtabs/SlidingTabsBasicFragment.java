@@ -76,13 +76,14 @@ public class SlidingTabsBasicFragment extends Fragment {
             Fragment fragment;
             switch (i) {
                 case 0:
-                    fragment = new SectionCommunity();
+                    fragment = new SectionQuestmap();
+
                     break;
                 case 1:
                     fragment = new SectionSearch();
                     break;
                 case 2:
-                    fragment = new SectionQuestmap();
+                    fragment = new SectionCommunity();
                     break;
                 case 3:
                     fragment = new SectionPrize();

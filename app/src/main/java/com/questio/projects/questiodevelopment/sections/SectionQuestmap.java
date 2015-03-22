@@ -36,7 +36,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.questio.projects.questiodevelopment.DatabaseHelper;
 import com.questio.projects.questiodevelopment.MainActivity;
-import com.questio.projects.questiodevelopment.QuestBrowsing;
+import com.questio.projects.questiodevelopment.questaction.QuestBrowsing;
 import com.questio.projects.questiodevelopment.R;
 import com.questio.projects.questiodevelopment.adapters.PlaceListAdapter;
 import com.questio.projects.questiodevelopment.models.PlaceObject;
@@ -156,25 +156,26 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_kmutt_location:
-                currentLat = 13.652948;
-                currentLng = 100.494281;
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.651029, 100.494195), 16.0f));
-                isEnterQuestMap(currentLat, currentLng, 13.651029, 100.494195, 1, "kmutt");
+            case R.id.action_sit_location:
+                currentLat = 13.652623;
+                currentLng = 100.493673;
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLat, currentLng), 16.0f));
+                if (!placeListForDistance.isEmpty()) {
+                    for (PlaceObject po : placeListForDistance) {
+                        isEnterQuestMap(currentLat, currentLng, po);
+                    }
+                }
                 return true;
 
-            case R.id.action_sciplanet_location:
-                currentLat = 13.720424;
-                currentLng = 100.583359;
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.720176, 100.583163), 16.0f));
-                isEnterQuestMap(currentLat, currentLng, 13.720176, 100.583163, 2, "sciplanet");
-                return true;
-
-            case R.id.action_nsm_location:
-                currentLat = 14.048520;
-                currentLng = 100.716716;
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(14.048624, 100.717188), 16.0f));
-                isEnterQuestMap(currentLat, currentLng, 14.048624, 100.717188, 3, "nsm");
+            case R.id.action_lib_location:
+                currentLat = 13.653077;
+                currentLng = 100.493956;
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLat, currentLng), 16.0f));
+                if (!placeListForDistance.isEmpty()) {
+                    for (PlaceObject po : placeListForDistance) {
+                        isEnterQuestMap(currentLat, currentLng, po);
+                    }
+                }
                 return true;
 
             case R.id.action_sync_data:
@@ -185,7 +186,6 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
                 return true;
             case R.id.action_qrcode_scan:
                 ((MainActivity) mContext).launchQRScanner(sectionView);
-
                 return true;
             default:
                 break;
@@ -232,20 +232,9 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
         List<Address> myList;
         currentLat = location.getLatitude();
         currentLng = location.getLongitude();
-
-        double placeLat = 0;
-        double placeLng = 0;
-        String placeName = "";
-        int placeId = 0;
         if (!placeListForDistance.isEmpty()) {
             for (PlaceObject po : placeListForDistance) {
-                placeId = po.getPlaceId();
-                placeName = po.getPlaceName();
-                placeLat = po.getPlaceLatitude();
-                placeLng = po.getPlaceLongitude();
-
-                isEnterQuestMap(currentLat, currentLng, placeLat, placeLng, placeId, placeName);
-                Log.d(LOG_TAG, placeName + " " + placeLat + " " + placeLng);
+                isEnterQuestMap(currentLat, currentLng, po);
             }
         }
 
@@ -287,22 +276,47 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
 
 
     // Method to check if player enter QuestMap
-    public void isEnterQuestMap(double currentLat, double currentLng, double placeLat, double placeLng, final int placeId, final String placeName) {
+//    public void isEnterQuestMap(double currentLat, double currentLng, double placeLat, double placeLng, final int placeId, final String placeName) {
+//
+//        float[] results = new float[1];
+//        Location.distanceBetween(currentLat, currentLng,
+//                placeLat, placeLng, results);
+//        if (results[0] < 500) {
+//            new AlertDialog.Builder(mContext)
+//                    .setIcon(android.R.drawable.ic_dialog_info)
+//                    .setTitle("เข้าสู่ " + placeName + "!")
+//                    .setMessage("จะเริ่มทำภารกิจในที่แห่งนี้เลยไหมครับ")
+//                    .setPositiveButton("เอาเลย!", new DialogInterface.OnClickListener() {
+//                        @Override
+//                        public void onClick(DialogInterface dialog, int which) {
+//                            Intent intent = new Intent(mContext, QuestBrowsing.class);
+//                            intent.putExtra("placeId", placeId);
+//                            intent.putExtra("placeName", placeName);
+//                            startActivity(intent);
+//                        }
+//
+//                    })
+//                    .setNegativeButton("ไม่", null)
+//                    .show();
+//        }
+//    }
+
+    public void isEnterQuestMap(double currentLat, double currentLng, final PlaceObject p) {
 
         float[] results = new float[1];
         Location.distanceBetween(currentLat, currentLng,
-                placeLat, placeLng, results);
-        if (results[0] < 500) {
+                p.getPlaceLatitude(), p.getPlaceLongitude(), results);
+        if (results[0] <= p.getPlaceRadius()) {
+
             new AlertDialog.Builder(mContext)
                     .setIcon(android.R.drawable.ic_dialog_info)
-                    .setTitle("เข้าสู่ " + placeName + "!")
+                    .setTitle("เข้าสู่ " + p.getPlaceName() + "!")
                     .setMessage("จะเริ่มทำภารกิจในที่แห่งนี้เลยไหมครับ")
                     .setPositiveButton("เอาเลย!", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             Intent intent = new Intent(mContext, QuestBrowsing.class);
-                            intent.putExtra("placeId", placeId);
-                            intent.putExtra("placeName", placeName);
+                              intent.putExtra("p", p);
                             startActivity(intent);
                         }
 
@@ -311,7 +325,6 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
                     .show();
         }
     }
-
     public Location getLocation() {
         try {
             locationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
