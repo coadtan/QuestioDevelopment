@@ -18,16 +18,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.questio.projects.questiodevelopment.R;
+import com.questio.projects.questiodevelopment.adapters.PlaceFeedAdapter;
+import com.questio.projects.questiodevelopment.models.PlaceFeedObject;
 import com.questio.projects.questiodevelopment.models.PlaceObject;
 
 import net.sourceforge.zbar.Symbol;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import zbar.scanner.ZBarConstants;
@@ -48,6 +52,8 @@ public class QuestBrowsing extends ActionBarActivity {
     Button questBtnMoreDetail;
     PlaceObject po;
     HashMap mapDetail;
+    ArrayList<PlaceFeedObject> placeFeed;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +61,14 @@ public class QuestBrowsing extends ActionBarActivity {
         setContentView(R.layout.activity_quest_browsing);
         initial();
         po = (PlaceObject) getIntent().getSerializableExtra("p");
-        mapDetail = po.getPalceDetailJSON(po.getPlaceId() + "");
+        mapDetail = po.getPalceDetailJSON(Integer.toString(po.getPlaceId()));
+
+        placeFeed = PlaceFeedObject.getAllPlaceFeedByPlaceId(Integer.toString(po.getPlaceId()));
+
+        PlaceFeedAdapter adapter = new PlaceFeedAdapter(this, placeFeed);
+        ListView listView = (ListView) findViewById(R.id.listFeed);
+        listView.setAdapter(adapter);
+
         questBtnMoreDetail.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -75,9 +88,9 @@ public class QuestBrowsing extends ActionBarActivity {
 
         placeNameTV.setText(po.getPlaceName());
         placeFullNameTV.setText(po.getPlacefullname());
-        handleNullTextView(quest_phone1,"placecontact1");
-        handleNullTextView(quest_phone2,"placecontact2");
-        handleNullTextView(quest_domain,"placewebsite");
+        handleNullTextView(quest_phone1, "placecontact1");
+        handleNullTextView(quest_phone2, "placecontact2");
+        handleNullTextView(quest_domain, "placewebsite");
     }
 
     public void initial() {
@@ -147,10 +160,10 @@ public class QuestBrowsing extends ActionBarActivity {
         }
     }
 
-    private void handleNullTextView(TextView tv, String mapkey){
-        if(mapDetail.get(mapkey).toString().equalsIgnoreCase("null")){
+    private void handleNullTextView(TextView tv, String mapkey) {
+        if (mapDetail.get(mapkey).toString().equalsIgnoreCase("null")) {
             tv.setText("");
-        }else{
+        } else {
             tv.setText(mapDetail.get(mapkey).toString());
         }
     }
