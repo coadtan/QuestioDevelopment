@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -12,22 +13,27 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.questio.projects.questiodevelopment.R;
+import com.questio.projects.questiodevelopment.adapters.PlaceFeedAdapter;
+import com.questio.projects.questiodevelopment.models.PlaceFeedObject;
 import com.questio.projects.questiodevelopment.models.PlaceObject;
 
 import net.sourceforge.zbar.Symbol;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import zbar.scanner.ZBarConstants;
@@ -47,21 +53,27 @@ public class QuestBrowsing extends ActionBarActivity {
     Toolbar toolbar;
     Button questBtnMoreDetail;
     PlaceObject po;
-    HashMap mapDetail;
+    HashMap placeDetail;
+    ArrayList<PlaceFeedObject> placeFeed;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quest_browsing);
         initial();
-        po = (PlaceObject) getIntent().getSerializableExtra("p");
-        mapDetail = po.getPalceDetailJSON(po.getPlaceId() + "");
+        placeFeed = PlaceFeedObject.getAllPlaceFeedByPlaceId(Integer.toString(po.getPlaceId()));
+
+        PlaceFeedAdapter adapter = new PlaceFeedAdapter(this, placeFeed);
+        ListView listView = (ListView) findViewById(R.id.listFeed);
+        listView.setAdapter(adapter);
+
         questBtnMoreDetail.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 AlertDialog.Builder builder1 = new AlertDialog.Builder(QuestBrowsing.this);
                 builder1.setTitle("ข้อมูลสถานที่");
-                builder1.setMessage(mapDetail.get("placedetail").toString());
+                builder1.setMessage(placeDetail.get("placedetail").toString());
                 builder1.setCancelable(true);
                 builder1.setNeutralButton("ขอบคุณ",
                         new DialogInterface.OnClickListener() {
@@ -75,12 +87,15 @@ public class QuestBrowsing extends ActionBarActivity {
 
         placeNameTV.setText(po.getPlaceName());
         placeFullNameTV.setText(po.getPlacefullname());
-        handleNullTextView(quest_phone1,"placecontact1");
-        handleNullTextView(quest_phone2,"placecontact2");
-        handleNullTextView(quest_domain,"placewebsite");
+        handleNullTextView(quest_phone1, "placecontact1");
+        handleNullTextView(quest_phone2, "placecontact2");
+        handleNullTextView(quest_domain, "placewebsite");
     }
 
     public void initial() {
+        po = (PlaceObject) getIntent().getSerializableExtra("p");
+        placeDetail = po.getPalceDetailJSON(Integer.toString(po.getPlaceId()));
+
         imageView = (ImageView) findViewById(R.id.questImgPlace);
         placeNameTV = (TextView) findViewById(R.id.questPlaceName);
         placeFullNameTV = (TextView) findViewById(R.id.questPlaceFullName);
@@ -93,7 +108,23 @@ public class QuestBrowsing extends ActionBarActivity {
         toolbar = (Toolbar) findViewById(R.id.questAppBar);
         setSupportActionBar(toolbar);
         toolbar.setLogo(R.mipmap.ic_launcher);
-        new LoadImage().execute("http://52.74.64.61/floorplan/dummyquest.png");
+        //Determine screen size
+        String placepicpath = placeDetail.get("placepicpath").toString();
+         if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE) {
+             placepicpath = placepicpath.replaceAll("screensize","drawable-xxhdpi");
+        }
+        else if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_NORMAL) {
+             placepicpath = placepicpath.replaceAll("screensize","drawable-xhdpi");
+        }
+        else if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_SMALL) {
+             placepicpath = placepicpath.replaceAll("screensize","drawable-hdpi");
+        }
+        else {
+             placepicpath = placepicpath.replaceAll("screensize","drawable-mdpi");
+        }
+
+        Log.d(LOG_TAG,"path: "+ "http://52.74.64.61"+ placepicpath);
+        new LoadImage().execute("http://52.74.64.61"+ placepicpath);
     }
 
     @Override
@@ -121,7 +152,7 @@ public class QuestBrowsing extends ActionBarActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             pDialog = new ProgressDialog(QuestBrowsing.this);
-            pDialog.setMessage("Loading Image ....");
+            pDialog.setMessage("โหลดรูปสักครู่ครับ ....");
             pDialog.show();
         }
 
@@ -141,17 +172,17 @@ public class QuestBrowsing extends ActionBarActivity {
                 pDialog.dismiss();
             } else {
                 pDialog.dismiss();
-                Toast.makeText(QuestBrowsing.this, "Image Does Not exist or Network Error", Toast.LENGTH_SHORT).show();
+                Toast.makeText(QuestBrowsing.this, "ไม่มีรูปในฐานข้อมูล หรือ อินเตอร์เน็ตมีปัญหา", Toast.LENGTH_SHORT).show();
 
             }
         }
     }
 
-    private void handleNullTextView(TextView tv, String mapkey){
-        if(mapDetail.get(mapkey).toString().equalsIgnoreCase("null")){
+    private void handleNullTextView(TextView tv, String mapkey) {
+        if (placeDetail.get(mapkey).toString().equalsIgnoreCase("null")) {
             tv.setText("");
-        }else{
-            tv.setText(mapDetail.get(mapkey).toString());
+        } else {
+            tv.setText(placeDetail.get(mapkey).toString());
         }
     }
     //QR Scan

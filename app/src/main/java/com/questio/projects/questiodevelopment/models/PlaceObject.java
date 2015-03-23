@@ -269,6 +269,7 @@ public class PlaceObject extends Activity implements Serializable {
     }
 
 
+
 }
 
 

@@ -187,6 +187,9 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
             case R.id.action_qrcode_scan:
                 ((MainActivity) mContext).launchQRScanner(sectionView);
                 return true;
+            case R.id.action_enter_zone0:
+
+                return true;
             default:
                 break;
         }
@@ -311,8 +314,8 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
             new AlertDialog.Builder(mContext)
                     .setIcon(android.R.drawable.ic_dialog_info)
                     .setTitle("เข้าสู่ " + p.getPlaceName() + "!")
-                    .setMessage("จะเริ่มทำภารกิจในที่แห่งนี้เลยไหมครับ")
-                    .setPositiveButton("เอาเลย!", new DialogInterface.OnClickListener() {
+                    .setMessage("ยืนยันการเข้าสู่สถานที่แห่งนี้หรือไม่ครับ")
+                    .setPositiveButton("ยืนยัน!", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             Intent intent = new Intent(mContext, QuestBrowsing.class);
