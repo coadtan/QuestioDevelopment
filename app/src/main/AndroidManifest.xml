@@ -47,6 +47,9 @@
         <activity
             android:name=".questaction.QuestBrowsing"
             android:label="Quest" />
+        <activity
+            android:name=".questaction.QuestZoning"
+            android:label="Zoning" />
     </application>
 
 </manifest><!--  coad : key for notebook

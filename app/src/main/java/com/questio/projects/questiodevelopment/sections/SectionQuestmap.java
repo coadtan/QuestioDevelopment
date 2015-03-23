@@ -40,6 +40,7 @@ import com.questio.projects.questiodevelopment.questaction.QuestBrowsing;
 import com.questio.projects.questiodevelopment.R;
 import com.questio.projects.questiodevelopment.adapters.PlaceListAdapter;
 import com.questio.projects.questiodevelopment.models.PlaceObject;
+import com.questio.projects.questiodevelopment.questaction.QuestZoning;
 
 import org.w3c.dom.Document;
 
@@ -188,7 +189,9 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
                 ((MainActivity) mContext).launchQRScanner(sectionView);
                 return true;
             case R.id.action_enter_zone0:
-
+                Intent intent = new Intent(mContext, QuestZoning.class);
+//                intent.putExtra("p", p);
+                startActivity(intent);
                 return true;
             default:
                 break;
