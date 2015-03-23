@@ -67,7 +67,14 @@
                     android:drawableBottom="@drawable/ic_moredetail" />
 
             </LinearLayout>
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:text="Scan QR Code เพื่อเข้าสู่ Zone ต่างๆครับ"
+                android:textColor="@color/button_material_dark"
 
+                />
             <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -136,15 +143,15 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <ListView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/listFeed"
-                android:layout_gravity="center_horizontal" />
+
 
         </LinearLayout>
     </ScrollView>
 
-
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/listFeed"
+        android:layout_gravity="center_horizontal" />
 </LinearLayout>
 

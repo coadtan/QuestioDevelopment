@@ -187,6 +187,9 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
             case R.id.action_qrcode_scan:
                 ((MainActivity) mContext).launchQRScanner(sectionView);
                 return true;
+            case R.id.action_enter_zone0:
+
+                return true;
             default:
                 break;
         }
