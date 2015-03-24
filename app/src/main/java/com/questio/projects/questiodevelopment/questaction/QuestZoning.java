@@ -42,6 +42,7 @@ public class QuestZoning extends ActionBarActivity {
         areapic_mini = (ImageView)findViewById(R.id.areapic_mini);
         new LoadImage().execute("http://52.74.64.61/placepic/drawable-xxhdpi/kmuttlibrary.png");
         areapic_mini.setAlpha(0.5F);
+        // add for test git
     }
 
 
