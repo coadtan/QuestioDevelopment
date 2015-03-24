@@ -255,7 +255,7 @@ public class PlaceObject extends Activity implements Serializable {
                     hashMap.put("placecontact1", obj.get("phonecontact1").toString());
                     hashMap.put("placecontact2", obj.get("phonecontact2").toString());
                     hashMap.put("placewebsite", obj.get("website").toString());
-                    hashMap.put("placepicpath", obj.get("placelogopath").toString());
+                    hashMap.put("placepicpath", obj.get("placepicpath").toString());
                 }
             }
         } catch (JSONException e) {
