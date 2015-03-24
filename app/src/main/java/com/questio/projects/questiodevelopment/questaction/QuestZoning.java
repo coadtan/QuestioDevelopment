@@ -27,7 +27,8 @@ import zbar.scanner.ZBarScannerActivity;
 
 public class QuestZoning extends ActionBarActivity {
     private final String LOG_TAG = QuestZoning.class.getSimpleName();
-    ImageView imageView;
+    ImageView zonepic;
+    ImageView areapic_mini;
     Bitmap bitmap;
     ProgressDialog pDialog;
 
@@ -37,7 +38,10 @@ public class QuestZoning extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quest_zoning);
-
+        zonepic = (ImageView)findViewById(R.id.zonepic);
+        areapic_mini = (ImageView)findViewById(R.id.areapic_mini);
+        new LoadImage().execute("http://52.74.64.61/placepic/drawable-xxhdpi/kmuttlibrary.png");
+        areapic_mini.setAlpha(0.5F);
     }
 
 
@@ -82,7 +86,8 @@ public class QuestZoning extends ActionBarActivity {
         protected void onPostExecute(Bitmap image) {
 
             if (image != null) {
-                imageView.setImageBitmap(image);
+                zonepic.setImageBitmap(image);
+                areapic_mini.setImageBitmap(image);
                 pDialog.dismiss();
             } else {
                 pDialog.dismiss();
