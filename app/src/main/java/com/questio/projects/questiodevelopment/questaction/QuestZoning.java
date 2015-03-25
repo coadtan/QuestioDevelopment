@@ -3,6 +3,7 @@ package com.questio.projects.questiodevelopment.questaction;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -48,11 +49,26 @@ public class QuestZoning extends ActionBarActivity {
         areapic_mini = (ImageView) findViewById(R.id.areapic_mini);
         ZoneObject zoneObject = (ZoneObject) getIntent().getSerializableExtra("z");
         if (zoneObject != null) {
-            Toast.makeText(this, zoneObject.getZoneName(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, zoneObject.getZoneName(), Toast.LENGTH_SHORT).show();
+
+
+            String map_url = zoneObject.getZonePicPath();
+            if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE) {
+                map_url = map_url.replaceAll("screensize", "drawable-xxhdpi");
+            } else if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_NORMAL) {
+                map_url = map_url.replaceAll("screensize", "drawable-xhdpi");
+            } else if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_SMALL) {
+                map_url = map_url.replaceAll("screensize", "drawable-hdpi");
+            } else {
+                map_url = map_url.replaceAll("screensize", "drawable-mdpi");
+            }
+
+            new LoadImageZone().execute("http://52.74.64.61" + map_url);
+            new LoadImageMiniMap().execute("http://52.74.64.61" + zoneObject.getMiniMap());
+            Toast.makeText(this,"http://52.74.64.61" + zoneObject.getMiniMap(),Toast.LENGTH_LONG).show();
         }
-//        new LoadImage().execute("http://52.74.64.61/placepic/drawable-xxhdpi/kmuttlibrary.png");
 //        add for test git
-        questList = QuestObject.getAllQuestByZoneId(1);
+        questList = QuestObject.getAllQuestByZoneId(zoneObject.getZoneId());
         for (QuestObject o : questList) {
             Log.d(LOG_TAG, o.toString());
         }
@@ -82,13 +98,10 @@ public class QuestZoning extends ActionBarActivity {
         return false;
     }
 
-    private class LoadImage extends AsyncTask<String, String, Bitmap> {
+    private class LoadImageZone extends AsyncTask<String, String, Bitmap> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            pDialog = new ProgressDialog(QuestZoning.this);
-            pDialog.setMessage("โหลดรูปสักครู่ครับ ....");
-            pDialog.show();
         }
 
         protected Bitmap doInBackground(String... args) {
@@ -104,16 +117,38 @@ public class QuestZoning extends ActionBarActivity {
 
             if (image != null) {
                 zonepic.setImageBitmap(image);
-                areapic_mini.setImageBitmap(image);
-                pDialog.dismiss();
             } else {
-                pDialog.dismiss();
                 Toast.makeText(QuestZoning.this, "ไม่มีรูปในฐานข้อมูล หรือ อินเตอร์เน็ตมีปัญหา", Toast.LENGTH_SHORT).show();
 
             }
         }
     }
 
+    private class LoadImageMiniMap extends AsyncTask<String, String, Bitmap> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        protected Bitmap doInBackground(String... args) {
+            try {
+                bitmap = BitmapFactory.decodeStream((InputStream) new URL(args[0]).getContent());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return bitmap;
+        }
+
+        protected void onPostExecute(Bitmap image) {
+
+            if (image != null) {
+                areapic_mini.setImageBitmap(image);
+            } else {
+                Toast.makeText(QuestZoning.this, "ไม่มีรูปในฐานข้อมูล หรือ อินเตอร์เน็ตมีปัญหา", Toast.LENGTH_SHORT).show();
+
+            }
+        }
+    }
 
     //QR Scan
 
