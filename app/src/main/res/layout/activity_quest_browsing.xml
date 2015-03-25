@@ -65,9 +65,9 @@
                     android:layout_gravity="center"
                     android:gravity="center"
                     android:drawableBottom="@drawable/ic_moredetail" />
-
             </LinearLayout>
             <Button
+                android:id="@+id/quest_btn_scan_qr"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="20sp"

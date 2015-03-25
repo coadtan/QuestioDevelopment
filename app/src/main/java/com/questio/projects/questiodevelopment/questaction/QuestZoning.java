@@ -9,18 +9,24 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.questio.projects.questiodevelopment.R;
+import com.questio.projects.questiodevelopment.adapters.QuestAdapter;
+import com.questio.projects.questiodevelopment.models.QuestObject;
+import com.questio.projects.questiodevelopment.models.ZoneObject;
 
 import net.sourceforge.zbar.Symbol;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 
 import zbar.scanner.ZBarConstants;
 import zbar.scanner.ZBarScannerActivity;
@@ -31,18 +37,28 @@ public class QuestZoning extends ActionBarActivity {
     ImageView areapic_mini;
     Bitmap bitmap;
     ProgressDialog pDialog;
-
+    ArrayList<QuestObject> questList;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quest_zoning);
-        zonepic = (ImageView)findViewById(R.id.zonepic);
-        areapic_mini = (ImageView)findViewById(R.id.areapic_mini);
-        new LoadImage().execute("http://52.74.64.61/placepic/drawable-xxhdpi/kmuttlibrary.png");
-        areapic_mini.setAlpha(0.5F);
-        // add for test git
+        zonepic = (ImageView) findViewById(R.id.zonepic);
+        areapic_mini = (ImageView) findViewById(R.id.areapic_mini);
+        ZoneObject zoneObject = (ZoneObject) getIntent().getSerializableExtra("z");
+        if (zoneObject != null) {
+            Toast.makeText(this, zoneObject.getZoneName(), Toast.LENGTH_LONG).show();
+        }
+//        new LoadImage().execute("http://52.74.64.61/placepic/drawable-xxhdpi/kmuttlibrary.png");
+//        add for test git
+        questList = QuestObject.getAllQuestByZoneId(1);
+        for (QuestObject o : questList) {
+            Log.d(LOG_TAG, o.toString());
+        }
+        QuestAdapter adapter = new QuestAdapter(this, questList);
+        ListView listView = (ListView) findViewById(R.id.list_quest);
+        listView.setAdapter(adapter);
     }
 
 

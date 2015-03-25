@@ -24,10 +24,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.questio.projects.questiodevelopment.QuestioUtility;
 import com.questio.projects.questiodevelopment.R;
 import com.questio.projects.questiodevelopment.adapters.PlaceFeedAdapter;
 import com.questio.projects.questiodevelopment.models.PlaceFeedObject;
 import com.questio.projects.questiodevelopment.models.PlaceObject;
+import com.questio.projects.questiodevelopment.models.ZoneObject;
 
 import net.sourceforge.zbar.Symbol;
 
@@ -39,14 +41,14 @@ import java.util.HashMap;
 import zbar.scanner.ZBarConstants;
 import zbar.scanner.ZBarScannerActivity;
 
-public class QuestBrowsing extends ActionBarActivity {
+public class QuestBrowsing extends ActionBarActivity implements View.OnClickListener{
     private final String LOG_TAG = QuestBrowsing.class.getSimpleName();
     TextView placeNameTV;
     TextView placeFullNameTV;
     TextView quest_phone1;
     TextView quest_phone2;
     TextView quest_domain;
-
+    Button quest_btn_scan_qr;
     ImageView imageView;
     Bitmap bitmap;
     ProgressDialog pDialog;
@@ -55,7 +57,8 @@ public class QuestBrowsing extends ActionBarActivity {
     PlaceObject po;
     HashMap placeDetail;
     ArrayList<PlaceFeedObject> placeFeed;
-
+    String qrScanValue;
+    ArrayList<ZoneObject> zoneList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,27 +66,13 @@ public class QuestBrowsing extends ActionBarActivity {
         setContentView(R.layout.activity_quest_browsing);
         initial();
         placeFeed = PlaceFeedObject.getAllPlaceFeedByPlaceId(Integer.toString(po.getPlaceId()));
-
+        zoneList = ZoneObject.getAllZoneByPlaceId(po.getPlaceId());
         PlaceFeedAdapter adapter = new PlaceFeedAdapter(this, placeFeed);
         ListView listView = (ListView) findViewById(R.id.listFeed);
         listView.setAdapter(adapter);
 
-        questBtnMoreDetail.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AlertDialog.Builder builder1 = new AlertDialog.Builder(QuestBrowsing.this);
-                builder1.setTitle("ข้อมูลสถานที่");
-                builder1.setMessage(placeDetail.get("placedetail").toString());
-                builder1.setCancelable(true);
-                builder1.setNeutralButton("ขอบคุณ",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                dialog.cancel();
-                            }
-                        });
-                builder1.show();
-            }
-        });
+        questBtnMoreDetail.setOnClickListener(this);
+        quest_btn_scan_qr.setOnClickListener(this);
 
         placeNameTV.setText(po.getPlaceName());
         placeFullNameTV.setText(po.getPlacefullname());
@@ -92,10 +81,12 @@ public class QuestBrowsing extends ActionBarActivity {
         handleNullTextView(quest_domain, "placewebsite");
     }
 
+
+
     public void initial() {
         po = (PlaceObject) getIntent().getSerializableExtra("p");
         placeDetail = po.getPalceDetailJSON(Integer.toString(po.getPlaceId()));
-
+        quest_btn_scan_qr = (Button)findViewById(R.id.quest_btn_scan_qr);
         imageView = (ImageView) findViewById(R.id.questImgPlace);
         placeNameTV = (TextView) findViewById(R.id.questPlaceName);
         placeFullNameTV = (TextView) findViewById(R.id.questPlaceFullName);
@@ -145,6 +136,31 @@ public class QuestBrowsing extends ActionBarActivity {
                 break;
         }
         return false;
+    }
+
+    @Override
+    public void onClick(View v) {
+        int elementClicked = v.getId();
+        switch (elementClicked){
+            case R.id.questBtnMoreDetail :
+                AlertDialog.Builder builder1 = new AlertDialog.Builder(QuestBrowsing.this);
+                builder1.setTitle("ข้อมูลสถานที่");
+                builder1.setMessage(placeDetail.get("placedetail").toString());
+                builder1.setCancelable(true);
+                builder1.setNeutralButton("ขอบคุณ",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+                builder1.show();
+                break;
+            case R.id.quest_btn_scan_qr  :
+                launchQRScanner();
+                break;
+            default:
+                break;
+        }
     }
 
     private class LoadImage extends AsyncTask<String, String, Bitmap> {
@@ -212,7 +228,15 @@ public class QuestBrowsing extends ActionBarActivity {
             case ZBAR_SCANNER_REQUEST:
             case ZBAR_QR_SCANNER_REQUEST:
                 if (resultCode == RESULT_OK) {
-                    Toast.makeText(this, "Scan Result = " + data.getStringExtra(ZBarConstants.SCAN_RESULT), Toast.LENGTH_SHORT).show();
+                    qrScanValue = data.getStringExtra(ZBarConstants.SCAN_RESULT);
+                    int check = QuestioUtility.checkValidQRCode(QuestioUtility.getDeQRCode(qrScanValue),zoneList);
+                    if(check == -1){
+                    }else{
+                        Intent intent = new Intent(this, QuestZoning.class);
+                        intent.putExtra("z", zoneList.get(check));
+                        startActivity(intent);
+                    }
+
                 } else if (resultCode == RESULT_CANCELED && data != null) {
                     String error = data.getStringExtra(ZBarConstants.ERROR_INFO);
                     if (!TextUtils.isEmpty(error)) {

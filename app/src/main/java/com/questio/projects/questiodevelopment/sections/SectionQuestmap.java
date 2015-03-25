@@ -281,32 +281,6 @@ public class SectionQuestmap extends Fragment implements LocationListener, Googl
     }
 
 
-    // Method to check if player enter QuestMap
-//    public void isEnterQuestMap(double currentLat, double currentLng, double placeLat, double placeLng, final int placeId, final String placeName) {
-//
-//        float[] results = new float[1];
-//        Location.distanceBetween(currentLat, currentLng,
-//                placeLat, placeLng, results);
-//        if (results[0] < 500) {
-//            new AlertDialog.Builder(mContext)
-//                    .setIcon(android.R.drawable.ic_dialog_info)
-//                    .setTitle("เข้าสู่ " + placeName + "!")
-//                    .setMessage("จะเริ่มทำภารกิจในที่แห่งนี้เลยไหมครับ")
-//                    .setPositiveButton("เอาเลย!", new DialogInterface.OnClickListener() {
-//                        @Override
-//                        public void onClick(DialogInterface dialog, int which) {
-//                            Intent intent = new Intent(mContext, QuestBrowsing.class);
-//                            intent.putExtra("placeId", placeId);
-//                            intent.putExtra("placeName", placeName);
-//                            startActivity(intent);
-//                        }
-//
-//                    })
-//                    .setNegativeButton("ไม่", null)
-//                    .show();
-//        }
-//    }
-
     public void isEnterQuestMap(double currentLat, double currentLng, final PlaceObject p) {
 
         float[] results = new float[1];
